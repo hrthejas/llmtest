@@ -18,7 +18,10 @@ def get_embedding_retriever(docs_base_path=contants.DOCS_BASE_PATH,
                                             index_name_prefix=index_name_prefix)
 
 
-def load_local_model(retriever):
+def load_local_model(retriever, model_id=contants.DEFAULT_MODEL_NAME,
+                     use_4bit_quantization=contants.USE_4_BIT_QUANTIZATION,
+                     set_device_map=contants.SET_DEVICE_MAP,
+                     max_new_tokens=contants.MAX_NEW_TOKENS):
     llm = llmloader.getLLM(
         model_id=contants.DEFAULT_MODEL_NAME,
         use_4bit_quantization=contants.USE_4_BIT_QUANTIZATION,
