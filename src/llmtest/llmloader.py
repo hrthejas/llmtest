@@ -23,7 +23,8 @@ def getLLM(
         max_new_tokens=256,
         set_device_map=False
 ):
-    model = model_loader.loadModel(model_id, use_4bit_quantization, model_class)
+    model = model_loader.loadModel(model_id, use_4bit_quantization, model_class, device_map=device_map,
+                                   set_device_map=set_device_map)
     tokenizer = model_loader.getTokenizer(model_id, tokenizer_class)
     if set_device_map == True:
         pipeline = pipeline_loader.getPipeLIneWithDeviceMap(
