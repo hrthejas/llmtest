@@ -37,6 +37,7 @@ setup(
     entry_points={},
     python_requires=">=3.7.0",
     install_requires=[
+        "environs",
         "bitsandbytes",
         "peft",
         "accelerate",
@@ -52,6 +53,9 @@ setup(
         "unstructured",
         "instructorembedding",
         "faiss-cpu",
+        "gradio",
+        "IPython",
+        "openai"
     ],
     extras_require=extras,
     classifiers=[
