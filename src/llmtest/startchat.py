@@ -4,6 +4,7 @@ import time
 from pprint import pprint
 from IPython.display import display, Markdown
 import os
+from getpass import getpass
 from llmtest import llmloader, vectorstore, ingest, contants, pipeline_loader
 
 from langchain.chains import RetrievalQA
@@ -32,7 +33,7 @@ def load_local_model(retriever, model_id=contants.DEFAULT_MODEL_NAME,
 
 
 def load_openai_model(retriever):
-    # os.environ["OPENAI_API_KEY"] = contants.OPEN_AI_API_KEY
+    os.environ["OPENAI_API_KEY"] = getpass("Paste your OpenAI API key here and hit enter:")
     llm = ChatOpenAI(model_name=contants.OPEN_AI_MODEL_NAME, temperature=contants.OPEN_AI_TEMP,
                      max_tokens=contants.MAX_NEW_TOKENS)
 
@@ -47,11 +48,13 @@ def get_chat_gpt_result(qa, final_question):
     return qa(final_question)
 
 
-def get_answers(local_qa, openai_qa, question):
+def get_answers(local_qa=None, openai_qa=None, question="list all environments in infoworks"):
     prompt = contants.QUESTION_PROMPT
     final_question = prompt + '\n' + question
-    display(Markdown('*OPEN AI Result*'))
-    print(get_chat_gpt_result(openai_qa, final_question)['result'])
-    print('\n\n\n\n')
-    display(Markdown('*local llm Result*'))
-    print(get_local_model_result(local_qa, final_question)['result'])
+    if openai_qa is not None:
+        display(Markdown('*OPEN AI Result*'))
+        print(get_chat_gpt_result(openai_qa, final_question)['result'])
+        print('\n\n\n\n')
+    if local_qa is not None:
+        display(Markdown('*local llm Result*'))
+        print(get_local_model_result(local_qa, final_question)['result'])
