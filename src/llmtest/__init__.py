@@ -3,34 +3,34 @@ import os
 from transformers import BitsAndBytesConfig
 from enum import Enum
 from transformers import (
-    AutoModelForCausalLM, 
-    AutoTokenizer, 
+    AutoModelForCausalLM,
+    AutoTokenizer,
     pipeline,
     AutoModelForQuestionAnswering,
     GenerationConfig
-    )
+)
 
 from langchain import (
     HuggingFaceHub,
     HuggingFacePipeline
-    )
+)
 
 from langchain.chains import RetrievalQA
 from langchain.embeddings import (
     HuggingFaceEmbeddings,
     HuggingFaceInstructEmbeddings
-    )
+)
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.vectorstores import (
     Chroma,
     FAISS,
     ElasticVectorSearch
-    )
+)
 from langchain.text_splitter import (
     CharacterTextSplitter,
     RecursiveCharacterTextSplitter,
     Language
-    )
+)
 from langchain.document_loaders import (
     DirectoryLoader,
     CSVLoader,
@@ -46,8 +46,3 @@ from langchain.document_loaders import (
     UnstructuredWordDocumentLoader,
     UnstructuredAPIFileLoader,
 )
-
-class IndexType(Enum):
-    FAISS_INDEX = 1
-    CHROMA_INDEX = 2
-    ELASTIC_SEARCH_INDEX = 3

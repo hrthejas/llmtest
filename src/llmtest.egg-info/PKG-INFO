@@ -1,0 +1,27 @@
+Metadata-Version: 2.1
+Name: llmtest
+Version: 0.0.1.dev0
+Summary: LLM Loader with local embeddings
+Home-page: https://github.com/hrthejas/llmtest
+Author: Thejas
+Author-email: h.r.thejas@gmail.com
+License: Apache
+Keywords: deep learning
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Education
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Requires-Python: >=3.7.0
+Description-Content-Type: text/markdown
+Provides-Extra: quality
+Provides-Extra: docs_specific
+Provides-Extra: dev
+Provides-Extra: test
+License-File: LICENSE
+
+# llmtest
