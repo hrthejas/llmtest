@@ -13,8 +13,6 @@ SET_DEVICE_MAP = env.bool("SET_DEVICE_MAP", True)
 
 OPEN_AI_API_KEY = env.str("OPEN_AI_API_KEY", "xxxxxx")
 
-
-
 default_prompt = """You are a REST API assistant working at Infoworks, but you are also an expert programmer.
 You are to complete the user request by composing a series of commands.
 Use the minimum number of commands required.
@@ -252,5 +250,3 @@ QUESTION_PROMPT = env.str("QUESTION_PROMPT", default_prompt)
 OPEN_AI_TEMP = env.int("OPEN_AI_TEMP", 0)
 
 OPEN_AI_MODEL_NAME = env.str("OPEN_AI_MODEL_NAME", "gpt-3.5-turbo")
-
-

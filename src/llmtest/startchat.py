@@ -27,7 +27,7 @@ def load_local_model(retriever):
 
 
 def load_openai_model(retriever):
-    os.environ["OPENAI_API_KEY"] = contants.OPEN_AI_API_KEY
+    # os.environ["OPENAI_API_KEY"] = contants.OPEN_AI_API_KEY
     llm = ChatOpenAI(model_name=contants.OPEN_AI_MODEL_NAME, temperature=contants.OPEN_AI_TEMP,
                      max_tokens=contants.MAX_NEW_TOKENS)
 
