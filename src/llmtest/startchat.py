@@ -10,10 +10,12 @@ from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOpenAI
 
 
-def get_embedding_retriever():
-    return vectorstore.getRetrieverForChain(docs_base_path=contants.DOCS_BASE_PATH,
-                                            index_base_path=contants.INDEX_BASE_PATH,
-                                            index_name_prefix=contants.INDEX_NAME_PREFIX)
+def get_embedding_retriever(docs_base_path=contants.DOCS_BASE_PATH,
+                            index_base_path=contants.INDEX_BASE_PATH,
+                            index_name_prefix=contants.INDEX_NAME_PREFIX):
+    return vectorstore.getRetrieverForChain(docs_base_path=docs_base_path,
+                                            index_base_path=index_base_path,
+                                            index_name_prefix=index_name_prefix)
 
 
 def load_local_model(retriever):
