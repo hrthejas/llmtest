@@ -48,7 +48,7 @@ def get_answers(local_qa, openai_qa, question):
     prompt = contants.QUESTION_PROMPT
     final_question = prompt + '\n' + question
     display(Markdown('*OPEN AI Result*'))
-    pprint(get_chat_gpt_result(openai_qa, final_question)['result'])
+    print(get_chat_gpt_result(openai_qa, final_question)['result'])
     print('\n\n\n\n')
     display(Markdown('*local llm Result*'))
-    pprint(get_local_model_result(local_qa, final_question)['result'])
+    print(get_local_model_result(local_qa, final_question)['result'])
