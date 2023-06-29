@@ -1,14 +1,12 @@
-import gradio as gr
-import random
-import time
-from pprint import pprint
 from IPython.display import display, Markdown
 import os
 from getpass import getpass
-from llmtest import llmloader, vectorstore, ingest, contants, pipeline_loader
 
+from IPython.display import display, Markdown
 from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOpenAI
+
+from llmtest import llmloader, vectorstore, contants
 
 
 def get_embedding_retriever(docs_base_path=contants.DOCS_BASE_PATH,
@@ -48,9 +46,12 @@ def get_chat_gpt_result(qa, final_question):
     return qa(final_question)
 
 
-def get_answers(local_qa=None, openai_qa=None, question="list all environments in infoworks"):
-    prompt = contants.QUESTION_PROMPT
-    final_question = prompt + '\n' + question
+def get_answers(local_qa=None, openai_qa=None, question="list all environments in infoworks", use_prompt=True,
+                prompt=contants.QUESTION_PROMPT):
+    if use_prompt:
+        final_question = prompt + '\n' + question
+    else:
+        final_question = question
     if openai_qa is not None:
         display(Markdown('*OPEN AI Result*'))
         print(get_chat_gpt_result(openai_qa, final_question)['result'])
