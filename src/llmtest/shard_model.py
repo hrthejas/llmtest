@@ -1,5 +1,7 @@
+import huggingface_hub
 import torch
 from llmtest import pipeline_loader, model_loader
+from getpass import getpass
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer
@@ -8,10 +10,13 @@ from transformers import (
 
 def hf_login():
     from huggingface_hub import notebook_login
+    token = getpass("Paste your HF API key here and hit enter:")
+    huggingface_hub.login(token=token)
     notebook_login()
 
 
 def save_model(model, tokenizer, out_model_name, max_shard_size, safe_serialization):
+    hf_login()
     model.push_to_hub(out_model_name, max_shard_size=max_shard_size, safe_serialization=safe_serialization)
     tokenizer.push_to_hub(save_model)
 
