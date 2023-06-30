@@ -11,6 +11,9 @@ DEFAULT_MODEL_NAME = env.str("DEFAULT_MODEL_NAME", "thr10/thr-wlm-15b-3gb")
 USE_4_BIT_QUANTIZATION = env.bool("USE_4_BIT_QUANTIZATION", True)
 SET_DEVICE_MAP = env.bool("SET_DEVICE_MAP", True)
 
+GDRIVE_MOUNT_BASE_PATH = env.str("GDRIVE_MOUNT_BASE_PATH", "/content/drive")
+
+
 # OPEN_AI_API_KEY = env.str("OPEN_AI_API_KEY", "xxxxxx")
 
 default_prompt = """You are a REST API assistant working at Infoworks, but you are also an expert programmer.
