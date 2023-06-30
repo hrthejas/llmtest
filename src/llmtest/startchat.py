@@ -12,9 +12,20 @@ from llmtest import llmloader, vectorstore, contants
 def get_embedding_retriever(docs_base_path=contants.DOCS_BASE_PATH,
                             index_base_path=contants.INDEX_BASE_PATH,
                             index_name_prefix=contants.INDEX_NAME_PREFIX):
+    index_base_path = index_base_path + "/hf/"
     return vectorstore.getRetrieverForChain(docs_base_path=docs_base_path,
                                             index_base_path=index_base_path,
                                             index_name_prefix=index_name_prefix)
+
+
+def get_embedding_retriever_openai(docs_base_path=contants.DOCS_BASE_PATH,
+                                   index_base_path=contants.INDEX_BASE_PATH,
+                                   index_name_prefix=contants.INDEX_NAME_PREFIX):
+    os.environ["OPENAI_API_KEY"] = getpass("Paste your OpenAI API key here and hit enter:")
+    index_base_path = index_base_path + "/openai/"
+    return vectorstore.getRetrieverForOpenAIChain(docs_base_path=docs_base_path,
+                                                  index_base_path=index_base_path,
+                                                  index_name_prefix=index_name_prefix)
 
 
 def load_local_model(retriever, model_id=contants.DEFAULT_MODEL_NAME,
@@ -31,7 +42,6 @@ def load_local_model(retriever, model_id=contants.DEFAULT_MODEL_NAME,
 
 
 def load_openai_model(retriever):
-    os.environ["OPENAI_API_KEY"] = getpass("Paste your OpenAI API key here and hit enter:")
     llm = ChatOpenAI(model_name=contants.OPEN_AI_MODEL_NAME, temperature=contants.OPEN_AI_TEMP,
                      max_tokens=contants.MAX_NEW_TOKENS)
 

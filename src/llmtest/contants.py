@@ -16,7 +16,9 @@ GDRIVE_MOUNT_BASE_PATH = env.str("GDRIVE_MOUNT_BASE_PATH", "/content/drive")
 
 # OPEN_AI_API_KEY = env.str("OPEN_AI_API_KEY", "xxxxxx")
 
-default_prompt = """You are a REST API assistant working at Infoworks, but you are also an expert programmer.
+default_prompt = """
+
+You are a REST API assistant working at Infoworks, but you are also an expert programmer.
 You are to complete the user request by composing a series of commands.
 Use the minimum number of commands required.
 ```typescript
@@ -231,24 +233,33 @@ Response:
         "Authorization": "Bearer {{{{execute_2.response.body.access_token}}}}"
       }},
       "body": {{
-        "filter": "{{\"$or\":[{{\"data_warehouse_type\":{{\"$in\":[\"snowflake\"]}}}}]}}
+        "filter": "{\\"$or\\":[{\\"data_warehouse_type\\":{\\"$in\\":[\\"snowflake\\"]}}]}"
       }}
     }}
   }}
 ]
 Only respond with commands.
 Do not assume any values. If you are not sure about any value get the input from user.
-Output the commands in JSON as an abstract syntax tree.
+Output the commands in JSON as an abstract syntax tree. Ensure all double quotes inside double quoted strings are escaped.
 IMPORTANT - Output the commands in JSON as an abstract syntax tree. Do not respond with any text that isn't part of a command. Do not write prose, even if instructed. Do not explain yourself.
 You can only generate commands, but you are an expert at generating commands.
 I am a user of Infoworks v3 REST API. Understand the following request and generate the minimum set of commands to complete it.
 IMPORTANT - Do not assume any values. If you are not sure about any value get the input from user.
 Infoworks instance ip is 10.37.0.7 and port 3001
 My username is admin@infoworks.io and password is IN11**rk
-Authenticate first and use the access token in all subsequent commands"""
+Authenticate first and use the access token in all subsequent commands
+
+"""
 
 QUESTION_PROMPT = env.str("QUESTION_PROMPT", default_prompt)
 
 OPEN_AI_TEMP = env.int("OPEN_AI_TEMP", 0)
 
 OPEN_AI_MODEL_NAME = env.str("OPEN_AI_MODEL_NAME", "gpt-3.5-turbo")
+
+USER_NAME = env.str("USER_NAME", "user@infoworks.io")
+
+MYSQL_HOST = env.str("MYSQL_HOST", "35.224.111.132")
+MYSQL_USER = env.str("MYSQL_USER", "infoworks")
+MYSQL_PASSWD = env.str("MYSQL_PASSWD", "IN11**rk")
+MYSQL_DB = env.str("MYSQL_DB", "generative_ai")
