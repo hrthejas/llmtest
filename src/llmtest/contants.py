@@ -3,7 +3,7 @@ from environs import Env
 
 env = Env()
 
-MAX_NEW_TOKENS = env.int("MAX_NEW_TOKENS", 296)
+MAX_NEW_TOKENS = env.int("MAX_NEW_TOKENS", 350)
 DOCS_BASE_PATH = env.str("DOCS_BASE_PATH", "/content/drive/Shareddrives/Engineering/Chatbot/thejas/data/")
 INDEX_BASE_PATH = env.str("INDEX_BASE_PATH", "/content/drive/Shareddrives/Engineering/Chatbot/thejas/indexes/")
 INDEX_NAME_PREFIX = env.str("INDEX_NAME_PREFIX", "api_index")
