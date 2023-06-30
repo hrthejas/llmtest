@@ -46,6 +46,32 @@ def get_chat_gpt_result(qa, final_question):
     return qa(final_question)
 
 
+def load_interface(local_qa=None, openai_qa=None, use_prompt=True,
+                   prompt=contants.QUESTION_PROMPT):
+    import gradio as gr
+
+    def chatbot(message):
+        if use_prompt:
+            final_question = prompt + '\n' + message
+        else:
+            final_question = message
+        if openai_qa is not None:
+            response1 = get_chat_gpt_result(openai_qa, final_question)['result']
+        else:
+            response1 = "Seams like open ai model is not loaded or not requested to give answer"
+        if local_qa is not None:
+            response2 = get_local_model_result(local_qa, final_question)['result']
+        else:
+            response2 = "Seams like iwxchat model is not loaded or not requested to give answer"
+
+        return response1, response2
+
+    iface = gr.Interface(fn=chatbot, inputs=gr.inputs.Textbox(label="Enter your question"),
+                         outputs=[gr.outputs.Textbox(label="Response from chatgpt"),
+                                  gr.outputs.Textbox(label="Response from iwx")])
+    iface.launch()
+
+
 def get_answers(local_qa=None, openai_qa=None, question="list all environments in infoworks", use_prompt=True,
                 prompt=contants.QUESTION_PROMPT):
     if use_prompt:

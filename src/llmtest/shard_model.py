@@ -5,12 +5,13 @@ from transformers import (
     AutoTokenizer
 )
 
-def hf_login() :
+
+def hf_login():
     from huggingface_hub import notebook_login
     notebook_login()
 
-def save_model(model,tokenizer,out_model_name,max_shard_size,safe_serialization) :
-    hf_login()
+
+def save_model(model, tokenizer, out_model_name, max_shard_size, safe_serialization):
     model.push_to_hub(out_model_name, max_shard_size=max_shard_size, safe_serialization=safe_serialization)
     tokenizer.push_to_hub(save_model)
 
@@ -27,7 +28,8 @@ def shard_model(
         max_shard_size="3GB",
         safe_serialization=True
 ):
+    hf_login()
     model = model_loader.getModelForSharding(model_id, model_class, device_map=device_map, torch_dtype=torch_dtype,
                                              offload_folder=offload_folder)
     tokenizer = model_loader.getTokenizer(model_id, tokenizer_class)
-    save_model(model,tokenizer,out_model_name,max_shard_size,safe_serialization)
+    save_model(model, tokenizer, out_model_name, max_shard_size, safe_serialization)
