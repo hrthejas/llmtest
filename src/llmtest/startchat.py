@@ -22,10 +22,10 @@ def load_local_model(retriever, model_id=contants.DEFAULT_MODEL_NAME,
                      set_device_map=contants.SET_DEVICE_MAP,
                      max_new_tokens=contants.MAX_NEW_TOKENS):
     llm = llmloader.getLLM(
-        model_id=contants.DEFAULT_MODEL_NAME,
-        use_4bit_quantization=contants.USE_4_BIT_QUANTIZATION,
-        set_device_map=contants.SET_DEVICE_MAP,
-        max_new_tokens=contants.MAX_NEW_TOKENS)
+        model_id=model_id,
+        use_4bit_quantization=use_4bit_quantization,
+        set_device_map=set_device_map,
+        max_new_tokens=max_new_tokens)
 
     return RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever, return_source_documents=True)
 
