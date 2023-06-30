@@ -28,7 +28,6 @@ def shard_model(
         max_shard_size="3GB",
         safe_serialization=True
 ):
-    hf_login()
     model = model_loader.getModelForSharding(model_id, model_class, device_map=device_map, torch_dtype=torch_dtype,
                                              offload_folder=offload_folder)
     tokenizer = model_loader.getTokenizer(model_id, tokenizer_class)
