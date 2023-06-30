@@ -20,7 +20,7 @@ def getEmbeddings(embedding_class=HuggingFaceInstructEmbeddings, model_name="hku
 
 
 def faissRetriever(embeddings, docs_content, index_base_path, index_name_prefix, is_overwrite=False,
-                   search_type="similarity", search_kwargs={"k": 1}):
+                   search_type="similarity", search_kwargs={"k": 4}):
     faiss_vector_store_path = index_base_path + "/faiss/" + index_name_prefix + "/"
     if is_overwrite == True and len(docs_content) > 0:
         vector_store = FAISS.from_documents(docs_content, embeddings)
@@ -85,13 +85,13 @@ def getRetrieverForChain(docs_base_path, index_base_path, index_name_prefix,
 
     if index_type == indextype.IndexType.FAISS_INDEX:
         return faissRetriever(embeddings, all_docs, index_base_path, index_name_prefix, is_overwrite=False,
-                              search_type="similarity", search_kwargs={"k": 1})
+                              search_type="similarity", search_kwargs={"k": 4})
     elif index_type == indextype.IndexType.CHROMA_INDEX:
         return chromaRetriever(embeddings, all_docs, index_base_path, index_name_prefix, is_overwrite=False,
-                               search_type="similarity", search_kwargs={"k": 1})
+                               search_type="similarity", search_kwargs={"k": 4})
     elif index_type == indextype.IndexType.ELASTIC_SEARCH_INDEX:
         return chromaRetriever(embeddings, all_docs, index_base_path, index_name_prefix, is_overwrite=False,
-                               search_type="similarity", search_kwargs={"k": 1})
+                               search_type="similarity", search_kwargs={"k": 4})
     else:
         raise Exception("Sorry, Unknown index_type : ")
 
