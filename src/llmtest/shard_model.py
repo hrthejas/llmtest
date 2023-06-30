@@ -5,6 +5,10 @@ from transformers import (
     AutoTokenizer
 )
 
+def hf_login() :
+    from huggingface_hub import notebook_login
+    notebook_login()
+
 def save_model(model,tokenizer,out_model_name,max_shard_size,safe_serialization) :
     model.push_to_hub(out_model_name, max_shard_size=max_shard_size, safe_serialization=safe_serialization)
     tokenizer.push_to_hub(save_model)
