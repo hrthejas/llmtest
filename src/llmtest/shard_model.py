@@ -9,11 +9,9 @@ from transformers import (
 
 
 def hf_login():
-    from huggingface_hub import notebook_login
+    from huggingface_hub import login
     token = getpass("Paste your HF API key here and hit enter:")
-    huggingface_hub.login(token=token)
-    notebook_login()
-
+    login(token=token)
 
 def save_model(model, tokenizer, out_model_name, max_shard_size, safe_serialization):
     model.push_to_hub(out_model_name, max_shard_size=max_shard_size, safe_serialization=safe_serialization)
