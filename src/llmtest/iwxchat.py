@@ -47,7 +47,8 @@ def start(load_gpt_model=True, load_local_model=True, local_model_id=contants.DE
     if load_local_model and local_llm is None:
         local_llm = startchat.load_local_model(hf_retriever, model_id=local_model_id,
                                                use_4bit_quantization=use_4bit_quantization,
-                                               max_new_tokens=max_new_tokens, set_device_map=set_device_map)
+                                               max_new_tokens=max_new_tokens, set_device_map=set_device_map,
+                                               device_map=device_map)
     else:
         local_llm = None
 
