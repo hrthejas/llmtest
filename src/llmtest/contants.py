@@ -259,6 +259,9 @@ OPEN_AI_MODEL_NAME = env.str("OPEN_AI_MODEL_NAME", "gpt-3.5-turbo")
 
 USER_NAME = env.str("USER_NAME", "user@infoworks.io")
 
+DEFAULT_DEVICE_MAP = env.str("DEFAULT_DEVICE_MAP", "auto")
+
+
 MYSQL_HOST = env.str("MYSQL_HOST", "35.224.111.132")
 MYSQL_USER = env.str("MYSQL_USER", "infoworks")
 MYSQL_PASSWD = env.str("MYSQL_PASSWD", "IN11**rk")

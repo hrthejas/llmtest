@@ -25,7 +25,8 @@ def start(load_gpt_model=True, load_local_model=True, local_model_id=contants.DE
           max_new_tokens=contants.MAX_NEW_TOKENS, use_4bit_quantization=contants.USE_4_BIT_QUANTIZATION,
           use_prompt=True, prompt=contants.QUESTION_PROMPT, set_device_map=contants.SET_DEVICE_MAP, mount_gdrive=True,
           share_chat_ui=True, debug=False, gdrive_mount_base_bath=contants.GDRIVE_MOUNT_BASE_PATH,
-          openai_llm=None, local_llm=None, hf_retriever=None, oi_retriever=None, load_retriever=True):
+          openai_llm=None, local_llm=None, hf_retriever=None, oi_retriever=None, load_retriever=True,
+          device_map=contants.DEFAULT_DEVICE_MAP):
     if mount_gdrive:
         ingest.mountGoogleDrive(mount_location=gdrive_mount_base_bath)
 
@@ -78,7 +79,7 @@ def start(load_gpt_model=True, load_local_model=True, local_model_id=contants.DE
                 bot_message = startchat.get_local_model_result(local_llm, query)['result']
             else:
                 bot_message = "Seams like iwxchat model is not loaded or not requested to give answer"
-            record_answers(history_2[-1][0],history_1[-1][1],bot_message)
+            record_answers(history_2[-1][0], history_1[-1][1], bot_message)
             history_2[-1][1] = ""
             for character in bot_message:
                 history_2[-1][1] += character
