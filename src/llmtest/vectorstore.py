@@ -9,7 +9,8 @@ from langchain.vectorstores import (
 
 from langchain.embeddings import (
     HuggingFaceEmbeddings,
-    HuggingFaceInstructEmbeddings
+    HuggingFaceInstructEmbeddings,
+    OpenAIEmbeddings
 )
 
 
@@ -19,7 +20,7 @@ def getEmbeddings(embedding_class=HuggingFaceInstructEmbeddings, model_name="hku
 
 
 def faissRetriever(embeddings, docs_content, index_base_path, index_name_prefix, is_overwrite=False,
-                   search_type="similarity", search_kwargs={"k": 1}):
+                   search_type="similarity", search_kwargs={"k": 4}):
     faiss_vector_store_path = index_base_path + "/faiss/" + index_name_prefix + "/"
     if is_overwrite == True and len(docs_content) > 0:
         vector_store = FAISS.from_documents(docs_content, embeddings)
@@ -84,6 +85,34 @@ def getRetrieverForChain(docs_base_path, index_base_path, index_name_prefix,
 
     if index_type == indextype.IndexType.FAISS_INDEX:
         return faissRetriever(embeddings, all_docs, index_base_path, index_name_prefix, is_overwrite=False,
+                              search_type="similarity", search_kwargs={"k": 4})
+    elif index_type == indextype.IndexType.CHROMA_INDEX:
+        return chromaRetriever(embeddings, all_docs, index_base_path, index_name_prefix, is_overwrite=False,
+                               search_type="similarity", search_kwargs={"k": 4})
+    elif index_type == indextype.IndexType.ELASTIC_SEARCH_INDEX:
+        return chromaRetriever(embeddings, all_docs, index_base_path, index_name_prefix, is_overwrite=False,
+                               search_type="similarity", search_kwargs={"k": 4})
+    else:
+        raise Exception("Sorry, Unknown index_type : ")
+
+
+def getRetrieverForOpenAIChain(docs_base_path, index_base_path, index_name_prefix,
+                               index_type=indextype.IndexType.FAISS_INDEX, is_overwrite=False, read_html_docs=True,
+                               read_md_docs=True,
+                               chunk_size=1000, chunk_overlap=100):
+    embeddings = OpenAIEmbeddings()
+    all_docs = list()
+    if is_overwrite == True:
+        # Reading Docs from the path
+        if read_html_docs == True:
+            html_docs = ingest.getHTMLDocs(docs_base_path, chunk_overlap=chunk_overlap, chunk_size=chunk_size)
+            all_docs = all_docs + html_docs
+        if read_md_docs == True:
+            md_docs = ingest.getMarkDownDocs(docs_base_path, chunk_overlap=chunk_overlap, chunk_size=chunk_size)
+            all_docs = all_docs + md_docs
+
+    if index_type == indextype.IndexType.FAISS_INDEX:
+        return faissRetriever(embeddings, all_docs, index_base_path, index_name_prefix, is_overwrite=False,
                               search_type="similarity", search_kwargs={"k": 1})
     elif index_type == indextype.IndexType.CHROMA_INDEX:
         return chromaRetriever(embeddings, all_docs, index_base_path, index_name_prefix, is_overwrite=False,
@@ -92,4 +121,4 @@ def getRetrieverForChain(docs_base_path, index_base_path, index_name_prefix,
         return chromaRetriever(embeddings, all_docs, index_base_path, index_name_prefix, is_overwrite=False,
                                search_type="similarity", search_kwargs={"k": 1})
     else:
-        raise Exception("Sorry, Unknown index_type : " + index_type)
+        raise Exception("Sorry, Unknown index_type : ")

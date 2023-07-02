@@ -55,7 +55,8 @@ setup(
         "faiss-cpu",
         "gradio",
         "IPython",
-        "openai"
+        "openai",
+        "mysql-connector-python"
     ],
     extras_require=extras,
     classifiers=[

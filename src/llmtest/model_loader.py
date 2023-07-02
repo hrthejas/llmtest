@@ -29,7 +29,7 @@ def getModelForSharding(model_id, model_class=AutoModelForCausalLM, torch_dtype=
 
 
 def getNonQuantizedModel(model_id, model_class=AutoModelForCausalLM, device_map="auto", set_device_map=False):
-    if set_device_map == True:
+    if set_device_map:
         model = model_class.from_pretrained(model_id, trust_remote_code=True, device_map=device_map)
         return model
     else:
@@ -37,9 +37,9 @@ def getNonQuantizedModel(model_id, model_class=AutoModelForCausalLM, device_map=
         return model
 
 
-def loadModel(model_id, use_4bit_quantization=False, model_class=AutoModelForCausalLM, device_map="auto",
-              set_device_map=False):
-    if use_4bit_quantization == True:
-        return getQuantizedModel(model_id, model_class, device_map="auto", set_device_map=False)
+def load_model(model_id, use_4bit_quantization=False, model_class=AutoModelForCausalLM, device_map="auto",
+               set_device_map=False):
+    if use_4bit_quantization:
+        return getQuantizedModel(model_id, model_class, device_map=device_map, set_device_map=set_device_map)
     else:
-        return getNonQuantizedModel(model_id, model_class, device_map="auto", set_device_map=False)
+        return getNonQuantizedModel(model_id, model_class, device_map=device_map, set_device_map=set_device_map)
