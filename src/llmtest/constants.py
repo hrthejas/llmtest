@@ -6,7 +6,8 @@ env = Env()
 MAX_NEW_TOKENS = env.int("MAX_NEW_TOKENS", 350)
 DOCS_BASE_PATH = env.str("DOCS_BASE_PATH", "/content/drive/Shareddrives/Engineering/Chatbot/thejas/data/")
 INDEX_BASE_PATH = env.str("INDEX_BASE_PATH", "/content/drive/Shareddrives/Engineering/Chatbot/thejas/indexes/")
-INDEX_NAME_PREFIX = env.str("INDEX_NAME_PREFIX", "api_index")
+DOC_INDEX_NAME_PREFIX = env.str("DOC_INDEX_NAME_PREFIX", "doc_index")
+API_INDEX_NAME_PREFIX = env.str("API_INDEX_NAME_PREFIX", "api_index")
 DEFAULT_MODEL_NAME = env.str("DEFAULT_MODEL_NAME", "thr10/thr-wlm-15b-3gb")
 USE_4_BIT_QUANTIZATION = env.bool("USE_4_BIT_QUANTIZATION", True)
 SET_DEVICE_MAP = env.bool("SET_DEVICE_MAP", True)
@@ -268,7 +269,7 @@ MYSQL_PASSWD = env.str("MYSQL_PASSWD", "IN11**rk")
 MYSQL_DB = env.str("MYSQL_DB", "generative_ai")
 
 
-DEFAULT_PROMPT_WITH_CONTEXT = """
+DEFAULT_PROMPT_WITH_CONTEXT_API = """
 
 Use the below context and embeddings to answer the user questions
 
@@ -453,6 +454,18 @@ Infoworks instance ip is 10.37.0.7 and port 3001
 My username is admin@infoworks.io and password is IN11**rk
 Authenticate first and use the access token in all subsequent commands and answer the below question
 
+
+QUESTION: {question} 
+
+"""
+
+DEFAULT_PROMPT_WITH_CONTEXT_DOC = """
+
+Use the below context and embeddings to answer the user questions
+
+CONTEXT: 
+{context}
+=========
 
 QUESTION: {question} 
 

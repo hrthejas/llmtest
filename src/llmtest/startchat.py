@@ -9,34 +9,16 @@ from langchain.chat_models import ChatOpenAI
 from llmtest import llmloader, vectorstore, constants
 
 
-def get_embedding_retriever(docs_base_path=constants.DOCS_BASE_PATH,
-                            index_base_path=constants.INDEX_BASE_PATH,
-                            index_name_prefix=constants.INDEX_NAME_PREFIX):
-    index_base_path = index_base_path + "/hf/"
-    return vectorstore.get_retriever_for_chain(docs_base_path=docs_base_path,
-                                               index_base_path=index_base_path,
-                                               index_name_prefix=index_name_prefix)
-
-
-def get_embedding_retriever_openai(docs_base_path=constants.DOCS_BASE_PATH,
-                                   index_base_path=constants.INDEX_BASE_PATH,
-                                   index_name_prefix=constants.INDEX_NAME_PREFIX):
-    os.environ["OPENAI_API_KEY"] = getpass("Paste your OpenAI API key here and hit enter:")
-    index_base_path = index_base_path + "/openai/"
-    return vectorstore.get_retriever_for_openai_chain(docs_base_path=docs_base_path,
-                                                      index_base_path=index_base_path,
-                                                      index_name_prefix=index_name_prefix)
-
-
 def get_local_model_llm(model_id=constants.DEFAULT_MODEL_NAME,
                         use_4bit_quantization=constants.USE_4_BIT_QUANTIZATION,
                         set_device_map=constants.SET_DEVICE_MAP,
-                        max_new_tokens=constants.MAX_NEW_TOKENS, device_map=constants.DEFAULT_DEVICE_MAP):
+                        max_new_tokens=constants.MAX_NEW_TOKENS, device_map=constants.DEFAULT_DEVICE_MAP,
+                        use_simple_llm_loader=False):
     return llmloader.getLLM(
         model_id=model_id,
         use_4bit_quantization=use_4bit_quantization,
         set_device_map=set_device_map,
-        max_new_tokens=max_new_tokens, device_map=device_map)
+        max_new_tokens=max_new_tokens, device_map=device_map, use_simple_llm_loader=use_simple_llm_loader)
 
 
 def get_openai_model_llm():
@@ -45,9 +27,9 @@ def get_openai_model_llm():
 
 
 def get_local_model_qa_chain(retriever, model_id=constants.DEFAULT_MODEL_NAME,
-                     use_4bit_quantization=constants.USE_4_BIT_QUANTIZATION,
-                     set_device_map=constants.SET_DEVICE_MAP,
-                     max_new_tokens=constants.MAX_NEW_TOKENS, device_map=constants.DEFAULT_DEVICE_MAP):
+                             use_4bit_quantization=constants.USE_4_BIT_QUANTIZATION,
+                             set_device_map=constants.SET_DEVICE_MAP,
+                             max_new_tokens=constants.MAX_NEW_TOKENS, device_map=constants.DEFAULT_DEVICE_MAP):
     llm = get_local_model_llm(
         model_id=model_id,
         use_4bit_quantization=use_4bit_quantization,
@@ -57,8 +39,7 @@ def get_local_model_qa_chain(retriever, model_id=constants.DEFAULT_MODEL_NAME,
     return RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever, return_source_documents=True)
 
 
-def get_openai_model_qa_chain(retriever):
-    llm = get_openai_model_llm()
+def get_openai_model_qa_chain(llm, retriever):
     return RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever, return_source_documents=True)
 
 
@@ -82,12 +63,13 @@ def get_chain(llm, prompt, chain_type="stuff"):
     return chain
 
 
-def get_local_model_result_using_chain(llm, question, chain_type="stuff"):
-    from langchain.chains.question_answering import load_qa_chain
-    from langchain.prompts import PromptTemplate
-    prompt = get_prompt()
-    chain = get_chain(llm, chain_type=chain_type, prompt=prompt)
-    return qa(final_question)
+# def get_local_model_result_using_chain(llm, question, chain_type="stuff"):
+#     from langchain.chains.question_answering import load_qa_chain
+#     from langchain.prompts import PromptTemplate
+#     prompt = get_prompt()
+#     chain = get_chain(llm, chain_type=chain_type, prompt=prompt)
+#
+#     return qa(final_question)
 
 
 def get_chat_gpt_result_using_chin(qa, final_question):

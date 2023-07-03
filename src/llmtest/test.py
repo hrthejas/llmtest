@@ -44,3 +44,55 @@
 #
 #     demo.queue()
 #     demo.launch(share=share_chat_ui, debug=debug)
+
+
+# def get_retriever_for_chain(docs_base_path, index_base_path, index_name_prefix,
+#                             embeddings,
+#                             index_type=indextype.IndexType.FAISS_INDEX, is_overwrite=False, read_html_docs=True,
+#                             read_md_docs=True,
+#                             chunk_size=1000, chunk_overlap=100, search_type="similarity", search_kwargs={"k": 1}):
+#
+#     vector_store = get_vector_store(docs_base_path, index_base_path, index_name_prefix, embeddings,
+#                                     index_type=indextype.IndexType.FAISS_INDEX, is_overwrite=False, read_html_docs=True,
+#                                     read_md_docs=True,
+#                                     chunk_size=1000, chunk_overlap=100)
+#
+#     if vector_store is not None:
+#         return get_retriever_from_store(vector_store, search_type=search_type, search_kwargs=search_kwargs)
+#     else:
+#         raise Exception("Sorry, Unknown index_type : ")
+#
+#
+# def get_retriever_for_openai_chain(docs_base_path, index_base_path, index_name_prefix,
+#                                    index_type=indextype.IndexType.FAISS_INDEX, is_overwrite=False, read_html_docs=True,
+#                                    read_md_docs=True,
+#                                    chunk_size=1000, chunk_overlap=100, search_type="similarity",
+#                                    search_kwargs={"k": 4}):
+#     embeddings = OpenAIEmbeddings()
+#     vector_store = get_vector_store(docs_base_path, index_base_path, index_name_prefix, embeddings,
+#                                     index_type=indextype.IndexType.FAISS_INDEX, is_overwrite=False, read_html_docs=True,
+#                                     read_md_docs=True,
+#                                     chunk_size=1000, chunk_overlap=100)
+#
+#     if vector_store is not None:
+#         return get_retriever_from_store(vector_store, search_type=search_type, search_kwargs=search_kwargs)
+#     else:
+#         raise Exception("Sorry, Unknown index_type : ")
+
+# def get_embedding_retriever(docs_base_path=constants.DOCS_BASE_PATH,
+#                             index_base_path=constants.INDEX_BASE_PATH,
+#                             index_name_prefix=constants.INDEX_NAME_PREFIX):
+#     index_base_path = index_base_path + "/hf/"
+#     return vectorstore.get_retriever_for_chain(docs_base_path=docs_base_path,
+#                                                index_base_path=index_base_path,
+#                                                index_name_prefix=index_name_prefix)
+#
+#
+# def get_embedding_retriever_openai(docs_base_path=constants.DOCS_BASE_PATH,
+#                                    index_base_path=constants.INDEX_BASE_PATH,
+#                                    index_name_prefix=constants.INDEX_NAME_PREFIX):
+#     os.environ["OPENAI_API_KEY"] = getpass("Paste your OpenAI API key here and hit enter:")
+#     index_base_path = index_base_path + "/openai/"
+#     return vectorstore.get_retriever_for_openai_chain(docs_base_path=docs_base_path,
+#                                                       index_base_path=index_base_path,
+#                                                       index_name_prefix=index_name_prefix)
