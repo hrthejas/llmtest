@@ -51,7 +51,8 @@ def start(load_gpt_model=True, load_local_model=True, local_model_id=constants.D
         openai_docs_qa_chain, openai_api_qa_chain = get_openai_qa_chain(open_ai_llm, api_index_name_prefix,
                                                                         docs_base_path,
                                                                         docs_index_name_prefix, index_base_path,
-                                                                        search_kwargs, search_type)
+                                                                        search_kwargs, search_type,
+                                                                        is_openai_model=True)
     if load_local_model:
         llm = startchat.get_local_model_llm(
             model_id=local_model_id,
@@ -62,7 +63,7 @@ def start(load_gpt_model=True, load_local_model=True, local_model_id=constants.D
         local_docs_qa_chain, local_api_qa_chain = get_local_qa_chain(llm, embedding_class, model_name,
                                                                      api_index_name_prefix, docs_base_path,
                                                                      docs_index_name_prefix, index_base_path,
-                                                                     search_kwargs, search_type)
+                                                                     search_kwargs, search_type, is_openai_model=False)
 
     choices = ['Docs', 'API']
     with gr.Blocks(theme="gradio/monochrome", mode="IWX CHATBOT", title="IWX CHATBOT") as demo:
@@ -118,12 +119,12 @@ def start(load_gpt_model=True, load_local_model=True, local_model_id=constants.D
 
 def get_openai_qa_chain(open_ai_llm, api_index_name_prefix, docs_base_path, docs_index_name_prefix, index_base_path,
                         search_kwargs,
-                        search_type):
+                        search_type, is_openai_model):
     openai_embeddings = embeddings.get_openai_embeddings()
 
     docs_retriever, api_retriever = get_retrievers(openai_embeddings, docs_base_path, index_base_path,
                                                    api_index_name_prefix, docs_index_name_prefix, search_kwargs,
-                                                   search_type)
+                                                   search_type, is_openai_model)
 
     openai_docs_qa_chain = startchat.get_openai_model_qa_chain(open_ai_llm, docs_retriever)
     openai_api_qa_chain = startchat.get_openai_model_qa_chain(open_ai_llm, api_retriever)
@@ -133,12 +134,12 @@ def get_openai_qa_chain(open_ai_llm, api_index_name_prefix, docs_base_path, docs
 
 def get_local_qa_chain(llm, embedding_class, model_name, api_index_name_prefix, docs_base_path, docs_index_name_prefix,
                        index_base_path, search_kwargs,
-                       search_type):
+                       search_type, is_openai_model):
     hf_embeddings = embeddings.get_embeddings(embedding_class, model_name)
 
     docs_retriever, api_retriever = get_retrievers(hf_embeddings, docs_base_path, index_base_path,
                                                    api_index_name_prefix, docs_index_name_prefix, search_kwargs,
-                                                   search_type)
+                                                   search_type, is_openai_model)
 
     openai_docs_qa_chain = startchat.get_openai_model_qa_chain(llm, docs_retriever)
     openai_api_qa_chain = startchat.get_openai_model_qa_chain(llm, api_retriever)
@@ -148,9 +149,10 @@ def get_local_qa_chain(llm, embedding_class, model_name, api_index_name_prefix, 
 
 def get_retrievers(model_embeddings, docs_base_path, index_base_path, api_index_name_prefix, docs_index_name_prefix,
                    search_kwargs,
-                   search_type):
+                   search_type, is_openai_model):
     doc_vector_store, api_vector_store = get_vector_stores(model_embeddings, docs_base_path, index_base_path,
-                                                           api_index_name_prefix, docs_index_name_prefix)
+                                                           api_index_name_prefix, docs_index_name_prefix,
+                                                           is_openai_model)
 
     docs_retriever = vectorstore.get_retriever_from_store(doc_vector_store, search_type=search_type,
                                                           search_kwargs=search_kwargs)
@@ -160,7 +162,12 @@ def get_retrievers(model_embeddings, docs_base_path, index_base_path, api_index_
     return docs_retriever, api_retriever
 
 
-def get_vector_stores(model_embeddings, docs_base_path, index_base_path, api_index_name_prefix, docs_index_name_prefix):
+def get_vector_stores(model_embeddings, docs_base_path, index_base_path, api_index_name_prefix, docs_index_name_prefix,
+                      is_openai_model):
+    if is_openai_model:
+        index_base_path = index_base_path + "/openai/"
+    else:
+        index_base_path = index_base_path + "/hf/"
     doc_vector_store = vectorstore.get_vector_store(index_base_path=index_base_path,
                                                     index_name_prefix=docs_index_name_prefix,
                                                     docs_base_path=docs_base_path, embeddings=model_embeddings)
@@ -205,20 +212,22 @@ def start_qa_chain(load_gpt_model=True, load_local_model=True, local_model_id=co
         open_ai_llm = startchat.get_openai_model_llm()
         openai_docs_vector_store, openai_api_vector_store = get_vector_stores(openai_embeddings, docs_base_path,
                                                                               index_base_path, api_index_name_prefix,
-                                                                              docs_index_name_prefix)
+                                                                              docs_index_name_prefix,
+                                                                              is_openai_model=True)
 
     if load_local_model:
         local_llm = startchat.get_local_model_llm(
             model_id=local_model_id,
             use_4bit_quantization=use_4bit_quantization,
             set_device_map=set_device_map,
-            max_new_tokens=max_new_tokens, device_map=device_map,use_simple_llm_loader=use_simple_llm_loader)
+            max_new_tokens=max_new_tokens, device_map=device_map, use_simple_llm_loader=use_simple_llm_loader)
 
         hf_embeddings = embeddings.get_embeddings(embedding_class, model_name)
 
         local_docs_vector_store, local_api_vector_store = get_vector_stores(hf_embeddings, docs_base_path,
                                                                             index_base_path, api_index_name_prefix,
-                                                                            docs_index_name_prefix)
+                                                                            docs_index_name_prefix,
+                                                                            is_openai_model=False)
 
     choices = ['Docs', 'API']
     with gr.Blocks(theme="gradio/monochrome", mode="IWX CHATBOT", title="IWX CHATBOT") as demo:
