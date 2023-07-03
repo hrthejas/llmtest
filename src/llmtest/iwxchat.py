@@ -31,7 +31,7 @@ def start(load_gpt_model=True, load_local_model=True, local_model_id=contants.DE
         ingest.mountGoogleDrive(mount_location=gdrive_mount_base_bath)
 
     if load_gpt_model and openai_llm is None:
-        if oi_retriever is not None:
+        if oi_retriever is None:
             oi_retriever = startchat.get_embedding_retriever_openai(index_base_path=index_base_path,
                                                                     index_name_prefix=index_name_prefix,
                                                                     docs_base_path=docs_base_path)
