@@ -1,5 +1,5 @@
 import os
-from llmtest import contants, indextype, ingest
+from llmtest import constants, indextype, ingest
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.vectorstores import (
     Chroma,
@@ -7,33 +7,24 @@ from langchain.vectorstores import (
     ElasticVectorSearch
 )
 
-from langchain.embeddings import (
-    HuggingFaceEmbeddings,
-    HuggingFaceInstructEmbeddings,
-    OpenAIEmbeddings
-)
+
+def get_retriever_from_store(store, search_type="similarity", search_kwargs={"k": 4}):
+    return store.as_retriever(search_type=search_type, search_kwargs=search_kwargs)
 
 
-def getEmbeddings(embedding_class=HuggingFaceInstructEmbeddings, model_name="hkunlp/instructor-large"):
-    from langchain.embeddings import HuggingFaceInstructEmbeddings
-    return embedding_class(model_name=model_name)
-
-
-def faissRetriever(embeddings, docs_content, index_base_path, index_name_prefix, is_overwrite=False,
-                   search_type="similarity", search_kwargs={"k": 4}):
+def faiss_db(embeddings, docs_content, index_base_path, index_name_prefix, is_overwrite=False):
     faiss_vector_store_path = index_base_path + "/faiss/" + index_name_prefix + "/"
+    vector_store = None
     if is_overwrite == True and len(docs_content) > 0:
         vector_store = FAISS.from_documents(docs_content, embeddings)
         vector_store.save_local(folder_path=faiss_vector_store_path, index_name=index_name_prefix)
-        return vector_store.as_retriever(search_type=search_type, search_kwargs=search_kwargs)
     else:
         vector_store = FAISS.load_local(folder_path=faiss_vector_store_path, embeddings=embeddings,
                                         index_name=index_name_prefix)
-        return vector_store.as_retriever(search_type=search_type, search_kwargs=search_kwargs)
+    return vector_store
 
 
-def chromaRetriever(embeddings, docs_content, index_base_path, index_name_prefix, is_overwrite=False,
-                    search_type="similarity", search_kwargs={"k": 1}):
+def chroma_db(embeddings, docs_content, index_base_path, index_name_prefix, is_overwrite=False):
     from chromadb.config import Settings
     chroma_vector_store_path = index_base_path + "/chroma/" + index_name_prefix
 
@@ -42,20 +33,18 @@ def chromaRetriever(embeddings, docs_content, index_base_path, index_name_prefix
         persist_directory=chroma_vector_store_path,
         anonymized_telemetry=False
     )
-
-    if is_overwrite == True and len(docs_content) > 0:
+    db = None
+    if is_overwrite and len(docs_content) > 0:
         db = Chroma.from_documents(docs_content, embeddings, persist_directory=chroma_vector_store_path,
                                    client_settings=CHROMA_SETTINGS)
         db.persist()
-        return db.as_retriever(search_kwargs=search_kwargs)
     else:
         db = Chroma(persist_directory=chroma_vector_store_path, embedding_function=embeddings,
                     client_settings=CHROMA_SETTINGS)
-        return db.as_retriever(search_kwargs=search_kwargs)
+    return db
 
 
-def elasticRetriever(embeddings, docs_content, index_base_path, index_name_prefix, is_overwrite=False,
-                     search_type="similarity", search_kwargs={"k": 1}):
+def elastic_db(embeddings, docs_content, index_base_path, index_name_prefix, is_overwrite=False):
     from langchain import ElasticVectorSearch
     endpoint = os.environ.get(
         'elastic_search_endpoint')  # 806b9000925b41b296b030ca49a1fd9a.es.us-central1.gcp.cloud.es.io
@@ -64,61 +53,30 @@ def elasticRetriever(embeddings, docs_content, index_base_path, index_name_prefi
     url = f"https://{username}:{password}@{endpoint}:443"
     db = ElasticVectorSearch(embedding=embeddings, elasticsearch_url=url, index_name=index_name_prefix)
     elastic_index = db.from_documents(docs_content, embeddings, elasticsearch_url=url)
-    return elastic_index.as_retriever(search_type=search_type, search_kwargs=search_kwargs)
+    return elastic_index
 
 
-def getRetrieverForChain(docs_base_path, index_base_path, index_name_prefix,
-                         embedding_class=HuggingFaceInstructEmbeddings, model_name="hkunlp/instructor-large",
-                         index_type=indextype.IndexType.FAISS_INDEX, is_overwrite=False, read_html_docs=True,
-                         read_md_docs=True,
-                         chunk_size=1000, chunk_overlap=100, search_type="similarity", search_kwargs={"k": 1}):
-    embeddings = getEmbeddings(embedding_class=embedding_class, model_name=model_name)
+def get_vector_store(docs_base_path, index_base_path, index_name_prefix,
+                     embeddings,
+                     index_type=indextype.IndexType.FAISS_INDEX, is_overwrite=False, read_html_docs=True,
+                     read_md_docs=True,
+                     chunk_size=1000, chunk_overlap=100):
     all_docs = list()
-    if is_overwrite == True:
+    if is_overwrite:
         # Reading Docs from the path
-        if read_html_docs == True:
+        if read_html_docs:
             html_docs = ingest.getHTMLDocs(docs_base_path, chunk_overlap=chunk_overlap, chunk_size=chunk_size)
             all_docs = all_docs + html_docs
-        if read_md_docs == True:
+        if read_md_docs:
             md_docs = ingest.getMarkDownDocs(docs_base_path, chunk_overlap=chunk_overlap, chunk_size=chunk_size)
             all_docs = all_docs + md_docs
 
-    if index_type == indextype.IndexType.FAISS_INDEX:
-        return faissRetriever(embeddings, all_docs, index_base_path, index_name_prefix, is_overwrite=False,
-                              search_type="similarity", search_kwargs={"k": 4})
-    elif index_type == indextype.IndexType.CHROMA_INDEX:
-        return chromaRetriever(embeddings, all_docs, index_base_path, index_name_prefix, is_overwrite=False,
-                               search_type="similarity", search_kwargs={"k": 4})
-    elif index_type == indextype.IndexType.ELASTIC_SEARCH_INDEX:
-        return chromaRetriever(embeddings, all_docs, index_base_path, index_name_prefix, is_overwrite=False,
-                               search_type="similarity", search_kwargs={"k": 4})
-    else:
-        raise Exception("Sorry, Unknown index_type : ")
-
-
-def getRetrieverForOpenAIChain(docs_base_path, index_base_path, index_name_prefix,
-                               index_type=indextype.IndexType.FAISS_INDEX, is_overwrite=False, read_html_docs=True,
-                               read_md_docs=True,
-                               chunk_size=1000, chunk_overlap=100):
-    embeddings = OpenAIEmbeddings()
-    all_docs = list()
-    if is_overwrite == True:
-        # Reading Docs from the path
-        if read_html_docs == True:
-            html_docs = ingest.getHTMLDocs(docs_base_path, chunk_overlap=chunk_overlap, chunk_size=chunk_size)
-            all_docs = all_docs + html_docs
-        if read_md_docs == True:
-            md_docs = ingest.getMarkDownDocs(docs_base_path, chunk_overlap=chunk_overlap, chunk_size=chunk_size)
-            all_docs = all_docs + md_docs
+    vector_store = None
 
     if index_type == indextype.IndexType.FAISS_INDEX:
-        return faissRetriever(embeddings, all_docs, index_base_path, index_name_prefix, is_overwrite=False,
-                              search_type="similarity", search_kwargs={"k": 1})
+        vector_store = faiss_db(embeddings, all_docs, index_base_path, index_name_prefix, is_overwrite=False)
     elif index_type == indextype.IndexType.CHROMA_INDEX:
-        return chromaRetriever(embeddings, all_docs, index_base_path, index_name_prefix, is_overwrite=False,
-                               search_type="similarity", search_kwargs={"k": 1})
+        vector_store = chroma_db(embeddings, all_docs, index_base_path, index_name_prefix, is_overwrite=False)
     elif index_type == indextype.IndexType.ELASTIC_SEARCH_INDEX:
-        return chromaRetriever(embeddings, all_docs, index_base_path, index_name_prefix, is_overwrite=False,
-                               search_type="similarity", search_kwargs={"k": 1})
-    else:
-        raise Exception("Sorry, Unknown index_type : ")
+        vector_store = elastic_db(embeddings, all_docs, index_base_path, index_name_prefix, is_overwrite=False)
+    return vector_store

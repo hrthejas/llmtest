@@ -21,33 +21,13 @@ def getLLM(
         top_k=1,
         num_return_sequences=1,
         max_new_tokens=256,
-        set_device_map=False
+        set_device_map=False,
+        use_simple_llm_loader=False
 ):
-    model = model_loader.load_model(model_id, use_4bit_quantization, model_class, device_map=device_map,
-                                    set_device_map=set_device_map)
-    tokenizer = model_loader.getTokenizer(model_id, tokenizer_class)
-    if set_device_map:
-        pipeline = pipeline_loader.getPipeLIneWithDeviceMap(
-            model,
-            tokenizer,
-            task=task,
-            use_cache=use_cache,
-            device_map=device_map,
-            do_sample=do_sample,
-            top_k=top_k,
-            num_return_sequences=num_return_sequences,
-            max_new_tokens=max_new_tokens,
-        )
-        return HuggingFacePipeline(pipeline=pipeline)
+    if use_simple_llm_loader:
+        return pipeline_loader.load_simple_pipeline(model_id, task, max_new_tokens, device_map)
     else:
-        pipeline = pipeline_loader.getPipeLIneWithoutDeviceMap(
-            model,
-            tokenizer,
-            task=task,
-            use_cache=use_cache,
-            do_sample=do_sample,
-            top_k=top_k,
-            num_return_sequences=num_return_sequences,
-            max_new_tokens=max_new_tokens,
-        )
-        return HuggingFacePipeline(pipeline=pipeline)
+        return pipeline_loader.load_pipeline(device_map, do_sample, max_new_tokens, model_class, model_id,
+                                             num_return_sequences,
+                                             set_device_map, task, tokenizer_class, top_k, use_4bit_quantization,
+                                             use_cache)
