@@ -1,13 +1,13 @@
-from llmtest import contants
+from llmtest import constants
 
 
 def insert_data(name, question, gpt_answer, iwx_answer, answer_helpful=False):
     import mysql.connector
     db = mysql.connector.connect(
-        host=contants.MYSQL_HOST,
-        user=contants.MYSQL_USER,
-        password=contants.MYSQL_PASSWD,
-        database=contants.MYSQL_DB
+        host=constants.MYSQL_HOST,
+        user=constants.MYSQL_USER,
+        password=constants.MYSQL_PASSWD,
+        database=constants.MYSQL_DB
     )
     cursor = db.cursor()
     val = (name, question, iwx_answer, gpt_answer)
