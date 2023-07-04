@@ -2,7 +2,9 @@ import gradio as gr
 import time
 import os
 from getpass import getpass
-
+from gradio import FlaggingCallback
+from gradio.components import IOComponent
+from typing import Any
 from transformers import pipeline
 
 from llmtest import constants, startchat, ingest, storage, embeddings, vectorstore
@@ -29,11 +31,77 @@ def record_answers(query, open_ai_answer, local_model_answer):
         pass
 
 
+def start_iwx(load_local_model=True, local_model_id=constants.DEFAULT_MODEL_NAME,
+              docs_base_path=constants.DOCS_BASE_PATH, index_base_path=constants.INDEX_BASE_PATH,
+              docs_index_name_prefix=constants.DOC_INDEX_NAME_PREFIX,
+              api_index_name_prefix=constants.API_INDEX_NAME_PREFIX,
+              max_new_tokens=constants.MAX_NEW_TOKENS, use_4bit_quantization=constants.USE_4_BIT_QUANTIZATION,
+              use_prompt=False, prompt=constants.QUESTION_PROMPT, set_device_map=constants.SET_DEVICE_MAP,
+              mount_gdrive=True,
+              share_chat_ui=True, debug=False, gdrive_mount_base_bath=constants.GDRIVE_MOUNT_BASE_PATH,
+              device_map=constants.DEFAULT_DEVICE_MAP, search_type="similarity", search_kwargs={"k": 4},
+              embedding_class=HuggingFaceInstructEmbeddings, model_name="hkunlp/instructor-large"):
+
+    if mount_gdrive:
+        ingest.mountGoogleDrive(mount_location=gdrive_mount_base_bath)
+
+    local_docs_qa_chain = None
+    local_api_qa_chain = None
+
+    if load_local_model:
+        llm = startchat.get_local_model_llm(
+            model_id=local_model_id,
+            use_4bit_quantization=use_4bit_quantization,
+            set_device_map=set_device_map,
+            max_new_tokens=max_new_tokens, device_map=device_map)
+
+        local_docs_qa_chain, local_api_qa_chain = get_local_qa_chain(llm, embedding_class, model_name,
+                                                                     api_index_name_prefix, docs_base_path,
+                                                                     docs_index_name_prefix, index_base_path,
+                                                                     search_kwargs, search_type, is_openai_model=False)
+
+    choices = ['Docs', 'API']
+    data = [('Bad', '1'), ('Ok', '2'), ('Good', '3'), ('Very Good', '4'), ('Perfect', '5')]
+
+    def chatbot(choice_selected, message):
+        query = get_question(message, use_prompt, prompt)
+        reference_docs = "Not populated"
+        if local_api_qa_chain is not None and local_docs_qa_chain is not None:
+            if choice_selected == "API":
+                bot_message = startchat.get_local_model_result(local_api_qa_chain, query)['result']
+            else:
+                bot_message = startchat.get_local_model_result(local_docs_qa_chain, query)['result']
+        else:
+            bot_message = "Seams like iwxchat model is not loaded or not requested to give answer"
+        print(bot_message)
+        print(reference_docs)
+        return bot_message, reference_docs
+
+    msg = gr.Textbox(label="User Question")
+    submit = gr.Button("Submit")
+    choice = gr.inputs.Dropdown(choices=choices, default="Docs", label="Choose question Type")
+    output_textbox = gr.outputs.Textbox(label="IWX Bot")
+    output_textbox.show_copy_button = True
+    output_textbox.lines = 10
+    output_textbox.max_lines = 10
+
+    output_textbox1 = gr.outputs.Textbox(label="Reference Docs")
+    output_textbox1.lines = 2
+    output_textbox1.max_lines = 2
+
+    interface = gr.Interface(fn=chatbot, inputs=[choice, msg], outputs=[output_textbox, output_textbox1],
+                             theme="gradio/monochrome",
+                             title="IWX CHATBOT", allow_flagging="manual", flagging_callback=MysqlLogger(),
+                             flagging_options=data)
+
+    interface.launch(debug=debug, share=share_chat_ui)
+
+
 def start(load_gpt_model=True, load_local_model=True, local_model_id=constants.DEFAULT_MODEL_NAME,
           docs_base_path=constants.DOCS_BASE_PATH, index_base_path=constants.INDEX_BASE_PATH,
           docs_index_name_prefix=constants.DOC_INDEX_NAME_PREFIX, api_index_name_prefix=constants.API_INDEX_NAME_PREFIX,
           max_new_tokens=constants.MAX_NEW_TOKENS, use_4bit_quantization=constants.USE_4_BIT_QUANTIZATION,
-          use_prompt=True, prompt=constants.QUESTION_PROMPT, set_device_map=constants.SET_DEVICE_MAP, mount_gdrive=True,
+          use_prompt=False, prompt=constants.QUESTION_PROMPT, set_device_map=constants.SET_DEVICE_MAP, mount_gdrive=True,
           share_chat_ui=True, debug=False, gdrive_mount_base_bath=constants.GDRIVE_MOUNT_BASE_PATH,
           device_map=constants.DEFAULT_DEVICE_MAP, search_type="similarity", search_kwargs={"k": 4},
           embedding_class=HuggingFaceInstructEmbeddings, model_name="hkunlp/instructor-large"):
@@ -301,6 +369,40 @@ def start_qa_chain(load_gpt_model=True, load_local_model=True, local_model_id=co
         demo.launch(share=share_chat_ui, debug=debug)
 
 
+class MysqlLogger(FlaggingCallback):
+
+    def __init__(self):
+        pass
+
+    def setup(self, components: list[IOComponent], flagging_dir: str = None):
+        self.components = components
+        self.flagging_dir = flagging_dir
+        print("here in setup")
+
+    def flag(
+            self,
+            flag_data: list[Any],
+            flag_option: str = "",
+            username: str = None,
+    ) -> int:
+        data = []
+        for component, sample in zip(self.components, flag_data):
+            data.append(
+                component.deserialize(
+                    sample,
+                    None,
+                    None,
+                )
+            )
+        data.append(flag_option)
+        if len(data[1]) > 0 and len(data[2]) > 0:
+            storage.insert_with_rating(constants.USER_NAME, data[0], data[1], data[2], data[3], data[4])
+        else:
+            print("no data to log")
+
+        return 1
+
+
 def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
                         docs_base_path=constants.DOCS_BASE_PATH, index_base_path=constants.INDEX_BASE_PATH,
                         docs_index_name_prefix=constants.DOC_INDEX_NAME_PREFIX,
@@ -310,12 +412,17 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
                         mount_gdrive=True,
                         share_chat_ui=True, debug=False, gdrive_mount_base_bath=constants.GDRIVE_MOUNT_BASE_PATH,
                         device_map=constants.DEFAULT_DEVICE_MAP, use_simple_llm_loader=False,
+                        use_api_template_with_authentication=False,
                         embedding_class=HuggingFaceInstructEmbeddings, model_name="hkunlp/instructor-large"):
     from langchain.chains.question_answering import load_qa_chain
     from langchain.prompts import PromptTemplate
 
-    api_prompt = PromptTemplate(template=constants.DEFAULT_PROMPT_WITH_CONTEXT_API,
+    api_prompt = PromptTemplate(template=constants.DEFAULT_PROMPT_WITH_CONTEXT_API_WITHOUT_AUTHENTICATION,
                                 input_variables=["context", "question"])
+    if use_api_template_with_authentication:
+        api_prompt = PromptTemplate(template=constants.DEFAULT_PROMPT_WITH_CONTEXT_API,
+                                    input_variables=["context", "question"])
+
     doc_prompt = PromptTemplate(template=constants.DEFAULT_PROMPT_WITH_CONTEXT_DOC,
                                 input_variables=["context", "question"])
 
@@ -336,6 +443,7 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
                                                                         is_openai_model=False)
 
     choices = ['Docs', 'API']
+    data = [('Bad', '1'), ('Ok', '2'), ('Good', '3'), ('Very Good', '4'), ('Perfect', '5')]
 
     def chatbot(choice_selected, message):
         query = message
@@ -359,7 +467,9 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
                 bot_message = "No matching docs found on the vector store"
         else:
             bot_message = "Seams like iwxchat model is not loaded or not requested to give answer"
-        record_answers(query, "OPen AI Not configured", bot_message)
+        # record_answers(query, "OPen AI Not configured", bot_message)
+        print(bot_message)
+        print(reference_docs)
         return bot_message, reference_docs
 
     msg = gr.Textbox(label="User Question")
@@ -376,5 +486,6 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
 
     interface = gr.Interface(fn=chatbot, inputs=[choice, msg], outputs=[output_textbox, output_textbox1],
                              theme="gradio/monochrome",
-                             title="IWX CHATBOT", allow_flagging="never")
+                             title="IWX CHATBOT", allow_flagging="manual", flagging_callback=MysqlLogger(),
+                             flagging_options=data)
     interface.launch(debug=debug, share=share_chat_ui)
