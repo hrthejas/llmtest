@@ -348,7 +348,8 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
                         share_chat_ui=True, debug=False, gdrive_mount_base_bath=constants.GDRIVE_MOUNT_BASE_PATH,
                         device_map=constants.DEFAULT_DEVICE_MAP, use_simple_llm_loader=False,
                         use_api_template_with_authentication=False,
-                        embedding_class=HuggingFaceInstructEmbeddings, model_name="hkunlp/instructor-large"):
+                        embedding_class=HuggingFaceInstructEmbeddings, model_name="hkunlp/instructor-large",
+                        use_queue=True):
     from langchain.chains.question_answering import load_qa_chain
     from langchain.prompts import PromptTemplate
 
@@ -423,7 +424,8 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
                              theme="gradio/monochrome",
                              title="IWX CHATBOT", allow_flagging="manual", flagging_callback=MysqlLogger(),
                              flagging_options=data)
-    interface.queue()
+    if use_queue:
+        interface.queue()
     interface.launch(debug=debug, share=share_chat_ui)
 
 
@@ -436,7 +438,7 @@ def start_iwx(load_local_model=True, local_model_id=constants.DEFAULT_MODEL_NAME
               mount_gdrive=True,
               share_chat_ui=True, debug=False, gdrive_mount_base_bath=constants.GDRIVE_MOUNT_BASE_PATH,
               device_map=constants.DEFAULT_DEVICE_MAP, search_type="similarity", search_kwargs={"k": 4},
-              embedding_class=HuggingFaceInstructEmbeddings, model_name="hkunlp/instructor-large"):
+              embedding_class=HuggingFaceInstructEmbeddings, model_name="hkunlp/instructor-large", use_queue=True):
     if mount_gdrive:
         ingest.mountGoogleDrive(mount_location=gdrive_mount_base_bath)
 
@@ -489,4 +491,7 @@ def start_iwx(load_local_model=True, local_model_id=constants.DEFAULT_MODEL_NAME
                              title="IWX CHATBOT", allow_flagging="manual", flagging_callback=MysqlLogger(),
                              flagging_options=data)
 
-    interface.queue().launch(debug=debug, share=share_chat_ui)
+    if use_queue:
+        interface.queue().launch(debug=debug, share=share_chat_ui)
+    else:
+        interface.launch(debug=debug, share=share_chat_ui)
