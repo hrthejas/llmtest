@@ -329,7 +329,10 @@ class MysqlLogger(FlaggingCallback):
                 )
             )
         data.append(flag_option)
-        storage.insert_with_rating(constants.USER_NAME, data[0], data[1], data[2], data[3], data[4])
+        if len(data[1]) > 0 and len(data[2]) > 0:
+            storage.insert_with_rating(constants.USER_NAME, data[0], data[1], data[2], data[3], data[4])
+        else:
+            print("no data to log")
 
         return 1
 
@@ -394,6 +397,8 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
         else:
             bot_message = "Seams like iwxchat model is not loaded or not requested to give answer"
         # record_answers(query, "OPen AI Not configured", bot_message)
+        print(bot_message)
+        print(reference_docs)
         return bot_message, reference_docs
 
     msg = gr.Textbox(label="User Question")
