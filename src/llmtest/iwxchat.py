@@ -354,7 +354,7 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
                 result = local_qa_chain({"input_documents": search_results, "question": query})
                 bot_message = result["output_text"]
                 for doc in search_results:
-                    reference_docs = reference_docs + '\n' + doc.value
+                    reference_docs = reference_docs + '\n' + str(doc.metadata.get('source'))
             else:
                 bot_message = "No matching docs found on the vector store"
         else:
