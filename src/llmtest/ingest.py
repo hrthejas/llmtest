@@ -29,9 +29,9 @@ def mountGoogleDrive(mount_location="/content/drive"):
     drive.mount(mount_location)
 
 
-def getJSONDocs(json_api_docs_path, chunk_size=1000, chunk_overlap=100):
-    loader = DirectoryLoader(json_api_docs_path, recursive=True, glob="**/*.json", loader_cls=JSONLoader,
-                             loader_kwargs={'jq_schema': '.', 'text_content': 'False'})
+def get_json_docs(json_api_docs_path, chunk_size=1000, chunk_overlap=100):
+    loader = DirectoryLoader(json_api_docs_path, recursive=True, glob="**/*.json", show_progress=True,
+                             loader_cls=JSONLoader, loader_kwargs={'jq_schema': '.', 'text_content': False})
     json_docs = loader.load()
     json_text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=chunk_size,
                                                                               chunk_overlap=chunk_overlap)
