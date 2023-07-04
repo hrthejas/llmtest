@@ -299,3 +299,82 @@ def start_qa_chain(load_gpt_model=True, load_local_model=True, local_model_id=co
 
         demo.queue()
         demo.launch(share=share_chat_ui, debug=debug)
+
+
+def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
+                        docs_base_path=constants.DOCS_BASE_PATH, index_base_path=constants.INDEX_BASE_PATH,
+                        docs_index_name_prefix=constants.DOC_INDEX_NAME_PREFIX,
+                        api_index_name_prefix=constants.API_INDEX_NAME_PREFIX,
+                        max_new_tokens=constants.MAX_NEW_TOKENS, use_4bit_quantization=constants.USE_4_BIT_QUANTIZATION,
+                        set_device_map=constants.SET_DEVICE_MAP,
+                        mount_gdrive=True,
+                        share_chat_ui=True, debug=False, gdrive_mount_base_bath=constants.GDRIVE_MOUNT_BASE_PATH,
+                        device_map=constants.DEFAULT_DEVICE_MAP, use_simple_llm_loader=False,
+                        embedding_class=HuggingFaceInstructEmbeddings, model_name="hkunlp/instructor-large"):
+    from langchain.chains.question_answering import load_qa_chain
+    from langchain.prompts import PromptTemplate
+
+    api_prompt = PromptTemplate(template=constants.DEFAULT_PROMPT_WITH_CONTEXT_API,
+                                input_variables=["context", "question"])
+    doc_prompt = PromptTemplate(template=constants.DEFAULT_PROMPT_WITH_CONTEXT_DOC,
+                                input_variables=["context", "question"])
+
+    if mount_gdrive:
+        ingest.mountGoogleDrive(mount_location=gdrive_mount_base_bath)
+
+    local_llm = startchat.get_local_model_llm(
+        model_id=local_model_id,
+        use_4bit_quantization=use_4bit_quantization,
+        set_device_map=set_device_map,
+        max_new_tokens=max_new_tokens, device_map=device_map, use_simple_llm_loader=use_simple_llm_loader)
+
+    hf_embeddings = embeddings.get_embeddings(embedding_class, model_name)
+
+    local_docs_vector_store, local_api_vector_store = get_vector_stores(hf_embeddings, docs_base_path,
+                                                                        index_base_path, api_index_name_prefix,
+                                                                        docs_index_name_prefix,
+                                                                        is_openai_model=False)
+
+    choices = ['Docs', 'API']
+
+    def chatbot(choice_selected, message):
+        query = message
+        reference_docs = ""
+        if local_llm is not None:
+            search_results = None
+            local_qa_chain = None
+            if choice_selected == "API":
+                search_results = local_api_vector_store.similarity_search(query)
+                local_qa_chain = load_qa_chain(llm=local_llm, chain_type="stuff", prompt=api_prompt)
+            else:
+                search_results = local_docs_vector_store.similarity_search(query)
+                local_qa_chain = load_qa_chain(llm=local_llm, chain_type="stuff", prompt=doc_prompt)
+
+            if local_qa_chain is not None and search_results is not None:
+                result = local_qa_chain({"input_documents": search_results, "question": query})
+                bot_message = result["output_text"]
+                for doc in search_results:
+                    reference_docs = reference_docs + '\n' + str(doc.metadata.get('source'))
+            else:
+                bot_message = "No matching docs found on the vector store"
+        else:
+            bot_message = "Seams like iwxchat model is not loaded or not requested to give answer"
+        record_answers(query, "OPen AI Not configured", bot_message)
+        return bot_message, reference_docs
+
+    msg = gr.Textbox(label="User Question")
+    submit = gr.Button("Submit")
+    choice = gr.inputs.Dropdown(choices=choices, default="Docs", label="Choose question Type")
+    output_textbox = gr.outputs.Textbox(label="IWX Bot")
+    output_textbox.show_copy_button = True
+    output_textbox.lines = 10
+    output_textbox.max_lines = 10
+
+    output_textbox1 = gr.outputs.Textbox(label="Reference Docs")
+    output_textbox1.lines = 2
+    output_textbox1.max_lines = 2
+
+    interface = gr.Interface(fn=chatbot, inputs=[choice, msg], outputs=[output_textbox, output_textbox1],
+                             theme="gradio/monochrome",
+                             title="IWX CHATBOT", allow_flagging="never")
+    interface.launch(debug=debug, share=share_chat_ui)
