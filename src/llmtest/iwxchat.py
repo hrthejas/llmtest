@@ -346,12 +346,17 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
                         mount_gdrive=True,
                         share_chat_ui=True, debug=False, gdrive_mount_base_bath=constants.GDRIVE_MOUNT_BASE_PATH,
                         device_map=constants.DEFAULT_DEVICE_MAP, use_simple_llm_loader=False,
+                        use_api_template_with_authentication=False,
                         embedding_class=HuggingFaceInstructEmbeddings, model_name="hkunlp/instructor-large"):
     from langchain.chains.question_answering import load_qa_chain
     from langchain.prompts import PromptTemplate
 
-    api_prompt = PromptTemplate(template=constants.DEFAULT_PROMPT_WITH_CONTEXT_API,
+    api_prompt = PromptTemplate(template=constants.DEFAULT_PROMPT_WITH_CONTEXT_API_WITHOUT_AUTHENTICATION,
                                 input_variables=["context", "question"])
+    if use_api_template_with_authentication:
+        api_prompt = PromptTemplate(template=constants.DEFAULT_PROMPT_WITH_CONTEXT_API,
+                                    input_variables=["context", "question"])
+
     doc_prompt = PromptTemplate(template=constants.DEFAULT_PROMPT_WITH_CONTEXT_DOC,
                                 input_variables=["context", "question"])
 
