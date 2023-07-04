@@ -3,6 +3,9 @@ from langchain.text_splitter import (
     RecursiveCharacterTextSplitter,
     Language
 )
+
+from langchain.document_loaders.json_loader import JSONLoader
+
 from langchain.document_loaders import (
     DirectoryLoader,
     CSVLoader,
@@ -24,6 +27,16 @@ def mountGoogleDrive(mount_location="/content/drive"):
     from google.colab import drive
     # This will prompt for authorization.
     drive.mount(mount_location)
+
+
+def getJSONDocs(json_api_docs_path, chunk_size=1000, chunk_overlap=100):
+    loader = DirectoryLoader(json_api_docs_path, recursive=True, glob="**/*.json", loader_cls=JSONLoader,
+                             loader_kwargs={'jq_schema': '.', 'text_content': 'False'})
+    json_docs = loader.load()
+    json_text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=chunk_size,
+                                                                              chunk_overlap=chunk_overlap)
+    json_text = json_text_splitter.split_documents(json_docs)
+    return json_text
 
 
 def getHTMLDocs(html_api_docs_path, chunk_size=1000, chunk_overlap=100):
