@@ -36,7 +36,7 @@ def start_iwx(load_local_model=True, local_model_id=constants.DEFAULT_MODEL_NAME
               docs_index_name_prefix=constants.DOC_INDEX_NAME_PREFIX,
               api_index_name_prefix=constants.API_INDEX_NAME_PREFIX,
               max_new_tokens=constants.MAX_NEW_TOKENS, use_4bit_quantization=constants.USE_4_BIT_QUANTIZATION,
-              use_prompt=True, prompt=constants.QUESTION_PROMPT, set_device_map=constants.SET_DEVICE_MAP,
+              use_prompt=False, prompt=constants.QUESTION_PROMPT, set_device_map=constants.SET_DEVICE_MAP,
               mount_gdrive=True,
               share_chat_ui=True, debug=False, gdrive_mount_base_bath=constants.GDRIVE_MOUNT_BASE_PATH,
               device_map=constants.DEFAULT_DEVICE_MAP, search_type="similarity", search_kwargs={"k": 4},
@@ -101,7 +101,7 @@ def start(load_gpt_model=True, load_local_model=True, local_model_id=constants.D
           docs_base_path=constants.DOCS_BASE_PATH, index_base_path=constants.INDEX_BASE_PATH,
           docs_index_name_prefix=constants.DOC_INDEX_NAME_PREFIX, api_index_name_prefix=constants.API_INDEX_NAME_PREFIX,
           max_new_tokens=constants.MAX_NEW_TOKENS, use_4bit_quantization=constants.USE_4_BIT_QUANTIZATION,
-          use_prompt=True, prompt=constants.QUESTION_PROMPT, set_device_map=constants.SET_DEVICE_MAP, mount_gdrive=True,
+          use_prompt=False, prompt=constants.QUESTION_PROMPT, set_device_map=constants.SET_DEVICE_MAP, mount_gdrive=True,
           share_chat_ui=True, debug=False, gdrive_mount_base_bath=constants.GDRIVE_MOUNT_BASE_PATH,
           device_map=constants.DEFAULT_DEVICE_MAP, search_type="similarity", search_kwargs={"k": 4},
           embedding_class=HuggingFaceInstructEmbeddings, model_name="hkunlp/instructor-large"):
