@@ -2,10 +2,12 @@ import gradio as gr
 import time
 import os
 from getpass import getpass
-
+from gradio import FlaggingCallback
+from gradio.components import IOComponent
+from typing import Any
 from transformers import pipeline
 
-from llmtest import constants, startchat, ingest, storage, embeddings, vectorstore, MysqlLogger
+from llmtest import constants, startchat, ingest, storage, embeddings, vectorstore
 
 from langchain.embeddings import (
     HuggingFaceEmbeddings,
@@ -299,6 +301,37 @@ def start_qa_chain(load_gpt_model=True, load_local_model=True, local_model_id=co
 
         demo.queue()
         demo.launch(share=share_chat_ui, debug=debug)
+
+
+class MysqlLogger(FlaggingCallback):
+
+    def __init__(self):
+        pass
+
+    def setup(self, components: list[IOComponent], flagging_dir: str = None):
+        self.components = components
+        self.flagging_dir = flagging_dir
+        print("here in setup")
+
+    def flag(
+            self,
+            flag_data: list[Any],
+            flag_option: str = "",
+            username: str = None,
+    ) -> int:
+        data = []
+        for component, sample in zip(self.components, flag_data):
+            data.append(
+                component.deserialize(
+                    sample,
+                    None,
+                    None,
+                )
+            )
+        data.append(flag_option)
+        storage.insert_with_rating(constants.USER_NAME, data[0], data[1], data[2], data[3], data[4])
+
+        return 1
 
 
 def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
