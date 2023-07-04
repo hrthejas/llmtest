@@ -5,7 +5,7 @@ from getpass import getpass
 
 from transformers import pipeline
 
-from llmtest import constants, startchat, ingest, storage, embeddings, vectorstore
+from llmtest import constants, startchat, ingest, storage, embeddings, vectorstore, MysqlLogger
 
 from langchain.embeddings import (
     HuggingFaceEmbeddings,
@@ -336,6 +336,7 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
                                                                         is_openai_model=False)
 
     choices = ['Docs', 'API']
+    data = [('Bad', '1'), ('Ok', '2'), ('Good', '3'), ('Very Good', '4'), ('Perfect', '5')]
 
     def chatbot(choice_selected, message):
         query = message
@@ -359,7 +360,7 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
                 bot_message = "No matching docs found on the vector store"
         else:
             bot_message = "Seams like iwxchat model is not loaded or not requested to give answer"
-        record_answers(query, "OPen AI Not configured", bot_message)
+        # record_answers(query, "OPen AI Not configured", bot_message)
         return bot_message, reference_docs
 
     msg = gr.Textbox(label="User Question")
@@ -376,5 +377,6 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
 
     interface = gr.Interface(fn=chatbot, inputs=[choice, msg], outputs=[output_textbox, output_textbox1],
                              theme="gradio/monochrome",
-                             title="IWX CHATBOT", allow_flagging="never")
+                             title="IWX CHATBOT", allow_flagging="manual", flagging_callback=MysqlLogger(),
+                             flagging_options=data)
     interface.launch(debug=debug, share=share_chat_ui)
