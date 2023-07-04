@@ -337,7 +337,7 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
 
     choices = ['Docs', 'API']
 
-    def chatbot(message, choice_selected):
+    def chatbot(choice_selected, message):
         query = message
         reference_docs = ""
         if local_llm is not None:
@@ -359,8 +359,8 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
                 bot_message = "No matching docs found on the vector store"
         else:
             bot_message = "Seams like iwxchat model is not loaded or not requested to give answer"
-        record_answers(query, "", bot_message)
-        return bot_message,reference_docs
+        record_answers(query, "OPen AI Not configured", bot_message)
+        return bot_message, reference_docs
 
     msg = gr.Textbox(label="User Question")
     submit = gr.Button("Submit")
