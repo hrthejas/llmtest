@@ -7,7 +7,7 @@ from gradio.components import IOComponent
 from typing import Any
 from transformers import pipeline
 
-from llmtest import constants, startchat, ingest, storage, embeddings, vectorstore
+from llmtest import constants, startchat, ingest, storage, embeddings, vectorstore, llmloader
 
 from langchain.embeddings import (
     HuggingFaceEmbeddings,
@@ -349,7 +349,8 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
                         device_map=constants.DEFAULT_DEVICE_MAP, use_simple_llm_loader=False,
                         use_api_template_with_authentication=False,
                         embedding_class=HuggingFaceInstructEmbeddings, model_name="hkunlp/instructor-large",
-                        use_queue=True):
+                        use_queue=True, is_gptq_model=False, custom_quantization_config=None, use_safetensors=False,
+                        use_triton=False):
     from langchain.chains.question_answering import load_qa_chain
     from langchain.prompts import PromptTemplate
 
@@ -365,11 +366,11 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
     if mount_gdrive:
         ingest.mountGoogleDrive(mount_location=gdrive_mount_base_bath)
 
-    local_llm = startchat.get_local_model_llm(
-        model_id=local_model_id,
-        use_4bit_quantization=use_4bit_quantization,
-        set_device_map=set_device_map,
-        max_new_tokens=max_new_tokens, device_map=device_map, use_simple_llm_loader=use_simple_llm_loader)
+    llm = llmloader.load_llm(local_model_id, use_4bit_quantization=use_4bit_quantization, set_device_map=set_device_map,
+                             max_new_tokens=max_new_tokens, device_map=device_map,
+                             use_simple_llm_loader=use_simple_llm_loader, is_quantized_gptq_model=is_gptq_model,
+                             custom_quantiztion_config=custom_quantization_config, use_triton=use_triton,
+                             use_safetensors=use_safetensors)
 
     hf_embeddings = embeddings.get_embeddings(embedding_class, model_name)
 
@@ -384,15 +385,15 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
     def chatbot(choice_selected, message):
         query = message
         reference_docs = ""
-        if local_llm is not None:
+        if llm is not None:
             search_results = None
             local_qa_chain = None
             if choice_selected == "API":
                 search_results = local_api_vector_store.similarity_search(query)
-                local_qa_chain = load_qa_chain(llm=local_llm, chain_type="stuff", prompt=api_prompt)
+                local_qa_chain = load_qa_chain(llm=llm, chain_type="stuff", prompt=api_prompt)
             else:
                 search_results = local_docs_vector_store.similarity_search(query)
-                local_qa_chain = load_qa_chain(llm=local_llm, chain_type="stuff", prompt=doc_prompt)
+                local_qa_chain = load_qa_chain(llm=llm, chain_type="stuff", prompt=doc_prompt)
 
             if local_qa_chain is not None and search_results is not None:
                 result = local_qa_chain({"input_documents": search_results, "question": query})
@@ -429,7 +430,7 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
     interface.launch(debug=debug, share=share_chat_ui)
 
 
-def start_iwx(load_local_model=True, local_model_id=constants.DEFAULT_MODEL_NAME,
+def start_iwx(local_model_id=constants.DEFAULT_MODEL_NAME,
               docs_base_path=constants.DOCS_BASE_PATH, index_base_path=constants.INDEX_BASE_PATH,
               docs_index_name_prefix=constants.DOC_INDEX_NAME_PREFIX,
               api_index_name_prefix=constants.API_INDEX_NAME_PREFIX,
@@ -445,17 +446,16 @@ def start_iwx(load_local_model=True, local_model_id=constants.DEFAULT_MODEL_NAME
     local_docs_qa_chain = None
     local_api_qa_chain = None
 
-    if load_local_model:
-        llm = startchat.get_local_model_llm(
-            model_id=local_model_id,
-            use_4bit_quantization=use_4bit_quantization,
-            set_device_map=set_device_map,
-            max_new_tokens=max_new_tokens, device_map=device_map)
+    llm = startchat.get_local_model_llm(
+        model_id=local_model_id,
+        use_4bit_quantization=use_4bit_quantization,
+        set_device_map=set_device_map,
+        max_new_tokens=max_new_tokens, device_map=device_map)
 
-        local_docs_qa_chain, local_api_qa_chain = get_local_qa_chain(llm, embedding_class, model_name,
-                                                                     api_index_name_prefix, docs_base_path,
-                                                                     docs_index_name_prefix, index_base_path,
-                                                                     search_kwargs, search_type, is_openai_model=False)
+    local_docs_qa_chain, local_api_qa_chain = get_local_qa_chain(llm, embedding_class, model_name,
+                                                                 api_index_name_prefix, docs_base_path,
+                                                                 docs_index_name_prefix, index_base_path,
+                                                                 search_kwargs, search_type, is_openai_model=False)
 
     choices = ['Docs', 'API']
     data = [('Bad', '1'), ('Ok', '2'), ('Good', '3'), ('Very Good', '4'), ('Perfect', '5')]

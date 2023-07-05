@@ -96,3 +96,14 @@
 #     return vectorstore.get_retriever_for_openai_chain(docs_base_path=docs_base_path,
 #                                                       index_base_path=index_base_path,
 #                                                       index_name_prefix=index_name_prefix)
+
+# pipe_kwargs_names = [
+#     "use_cache",
+#     "do_sample",
+#     "top_k",
+#     "num_return_sequences",
+#     "proxies",
+#     "eos_token_id",
+#     "pad_token_id",
+# ]
+# pipe_kwargs = {name: pipeline_args.pop(name) for name in pipe_kwargs_names if name in pipeline_args}

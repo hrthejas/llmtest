@@ -14,7 +14,6 @@ SET_DEVICE_MAP = env.bool("SET_DEVICE_MAP", True)
 
 GDRIVE_MOUNT_BASE_PATH = env.str("GDRIVE_MOUNT_BASE_PATH", "/content/drive")
 
-
 # OPEN_AI_API_KEY = env.str("OPEN_AI_API_KEY", "xxxxxx")
 
 default_prompt = """
@@ -262,12 +261,10 @@ USER_NAME = env.str("USER_NAME", "user@infoworks.io")
 
 DEFAULT_DEVICE_MAP = env.str("DEFAULT_DEVICE_MAP", "auto")
 
-
 MYSQL_HOST = env.str("MYSQL_HOST", "35.224.111.132")
 MYSQL_USER = env.str("MYSQL_USER", "infoworks")
 MYSQL_PASSWD = env.str("MYSQL_PASSWD", "IN11**rk")
 MYSQL_DB = env.str("MYSQL_DB", "generative_ai")
-
 
 DEFAULT_PROMPT_WITH_CONTEXT_API = """
 
@@ -607,3 +604,8 @@ IMPORTANT - Use access token or refresh token to authenticate every execute comm
 QUESTION: {question} 
 
 """
+
+DEFAULT_GPTQ_QUANTIZED_MODEL_CONF = {'device': "cuda:0", "use_safetensors": False, 'use_triton': False,
+                                     'quantize_config': None}
+
+DEFAULT_GPTQ_QUANTIZED_PIPE_CONF = {'task': 'text-generation'}
