@@ -59,7 +59,7 @@ def load_llm(
         additional_pipeline_args=None,
         additional_tokenizer_args=None,
         set_eos_token=True,
-        set_pad_toke=True,
+        set_pad_token=True,
 ):
     if additional_pipeline_args is None:
         additional_pipeline_args = {}
@@ -85,10 +85,14 @@ def load_llm(
             additional_pipeline_args['do_sample'] = do_sample
         if set_eos_token:
             additional_pipeline_args['eos_token_id'] = tokenizer.eos_token_id
-        if set_pad_toke:
+        if set_pad_token:
             additional_pipeline_args['pad_token_id'] = tokenizer.eos_token_id
 
+        print("Additional pipeline args " + additional_pipeline_args)
+
         if set_device_map:
+            print("Creating a pipeline with device map")
+
             pipe = pipeline_loader.get_pipeline(model=model, task=task, tokenizer=tokenizer,
                                                 max_new_tokens=max_new_tokens,
                                                 additional_pipeline_args=additional_pipeline_args, use_fast=True,

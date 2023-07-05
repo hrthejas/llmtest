@@ -28,14 +28,17 @@ def get_generic_model(model_id, model_class, device_map, use_quantization, custo
     if use_quantization:
         if custom_quantization_conf is None:
             print(
-                "Using default quntization config from bits and bytes use 'custom_quantization_conf' if you want ot change")
+                "Using default quntization config from bits and bytes use 'custom_quantization_conf' if you want ot "
+                "change")
             custom_quantization_conf = get_quantization_config()
 
     if use_quantization:
+        print("Loading model " + model_id + " with quantization with config " + custom_quantization_conf)
         return model_class.from_pretrained(model_id, device_map=device_map,
                                            quantization_config=custom_quantization_conf,
                                            trust_remote_code=True, **additional_model_args)
     else:
+        print("Loading model " + model_id)
         if pass_device_map:
             return model_class.from_pretrained(model_id, trust_remote_code=True, device_map=device_map,
                                                **additional_model_args)
