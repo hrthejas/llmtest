@@ -60,6 +60,8 @@ def load_llm(
         additional_tokenizer_args=None,
         set_eos_token=True,
         set_pad_token=True,
+        set_torch_dtype=False,
+        torch_dtype=torch.bfloat16
 ):
     if additional_pipeline_args is None:
         additional_pipeline_args = {}
@@ -74,7 +76,7 @@ def load_llm(
         model = model_loader.get_model(model_id, model_class, device_map, use_4bit_quantization, additional_model_Args,
                                        is_quantized_gptq_model, is_gglm_model, custom_quantiztion_config,
                                        use_safetensors,
-                                       use_triton, set_device_map)
+                                       use_triton, set_device_map,set_torch_dtype,torch_dtype)
 
         additional_pipeline_args['top_k'] = top_k
         additional_pipeline_args['num_return_sequences'] = num_return_sequences

@@ -2,6 +2,8 @@ import gradio as gr
 import time
 import os
 from getpass import getpass
+
+import torch
 from gradio import FlaggingCallback
 from gradio.components import IOComponent
 from typing import Any
@@ -16,7 +18,7 @@ from langchain.embeddings import (
 )
 
 
-def get_question(user_input, use_prompt, prompt,choice_selected):
+def get_question(user_input, use_prompt, prompt, choice_selected):
     if use_prompt and choice_selected == "API":
         return prompt + '\n' + user_input
     else:
@@ -350,7 +352,7 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
                         use_api_template_with_authentication=False,
                         embedding_class=HuggingFaceInstructEmbeddings, model_name="hkunlp/instructor-large",
                         use_queue=True, is_gptq_model=False, custom_quantization_config=None, use_safetensors=False,
-                        use_triton=False):
+                        use_triton=False, set_torch_dtype=False, torch_dtype=torch.bfloat16):
     from langchain.chains.question_answering import load_qa_chain
     from langchain.prompts import PromptTemplate
 
@@ -370,7 +372,7 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
                              max_new_tokens=max_new_tokens, device_map=device_map,
                              use_simple_llm_loader=use_simple_llm_loader, is_quantized_gptq_model=is_gptq_model,
                              custom_quantiztion_config=custom_quantization_config, use_triton=use_triton,
-                             use_safetensors=use_safetensors)
+                             use_safetensors=use_safetensors, set_torch_dtype=set_torch_dtype, torch_dtype=torch_dtype)
 
     hf_embeddings = embeddings.get_embeddings(embedding_class, model_name)
 
@@ -441,7 +443,7 @@ def start_iwx(local_model_id=constants.DEFAULT_MODEL_NAME,
               device_map=constants.DEFAULT_DEVICE_MAP, search_type="similarity", search_kwargs={"k": 4},
               embedding_class=HuggingFaceInstructEmbeddings, model_name="hkunlp/instructor-large", use_queue=True,
               use_simple_llm_loader=False, is_gptq_model=False, custom_quantization_config=None,
-              use_triton=False, use_safetensors=False):
+              use_triton=False, use_safetensors=False,set_torch_dtype=False, torch_dtype=torch.bfloat16):
     if mount_gdrive:
         ingest.mountGoogleDrive(mount_location=gdrive_mount_base_bath)
 
@@ -452,7 +454,7 @@ def start_iwx(local_model_id=constants.DEFAULT_MODEL_NAME,
                              max_new_tokens=max_new_tokens, device_map=device_map,
                              use_simple_llm_loader=use_simple_llm_loader, is_quantized_gptq_model=is_gptq_model,
                              custom_quantiztion_config=custom_quantization_config, use_triton=use_triton,
-                             use_safetensors=use_safetensors)
+                             use_safetensors=use_safetensors,set_torch_dtype=set_torch_dtype,torch_dtype=torch_dtype)
 
     local_docs_qa_chain, local_api_qa_chain = get_local_qa_chain(llm, embedding_class, model_name,
                                                                  api_index_name_prefix, docs_base_path,
@@ -463,7 +465,7 @@ def start_iwx(local_model_id=constants.DEFAULT_MODEL_NAME,
     data = [('Bad', '1'), ('Ok', '2'), ('Good', '3'), ('Very Good', '4'), ('Perfect', '5')]
 
     def chatbot(choice_selected, message):
-        query = get_question(message, use_prompt, prompt,choice_selected)
+        query = get_question(message, use_prompt, prompt, choice_selected)
         reference_docs = "Not populated"
         if local_api_qa_chain is not None and local_docs_qa_chain is not None:
             if choice_selected == "API":

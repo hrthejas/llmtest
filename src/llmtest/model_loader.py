@@ -1,6 +1,7 @@
 import torch
 from transformers import BitsAndBytesConfig
 
+
 def get_gptq_model(model_id, device_map, use_quantization, use_safetensors, use_triton, custom_quantization_conf,
                    additional_model_args):
     from auto_gptq import AutoGPTQForCausalLM, BaseQuantizeConfig
@@ -21,7 +22,7 @@ def get_gptq_model(model_id, device_map, use_quantization, use_safetensors, use_
 
 
 def get_generic_model(model_id, model_class, device_map, use_quantization, custom_quantization_conf,
-                      additional_model_args, pass_device_map):
+                      additional_model_args, pass_device_map, set_torch_dtype, torch_dtype):
     if additional_model_args is None:
         additional_model_args = {}
 
@@ -39,6 +40,15 @@ def get_generic_model(model_id, model_class, device_map, use_quantization, custo
                                            trust_remote_code=True, **additional_model_args)
     else:
         print("Loading model " + model_id)
+        if set_torch_dtype:
+            if additional_model_args is None:
+                additional_model_args = {}
+            additional_model_args['torch_dtype'] = torch_dtype
+
+        if additional_model_args is not None:
+            print("Setting additional model args")
+            print(additional_model_args)
+
         if pass_device_map:
             return model_class.from_pretrained(model_id, trust_remote_code=True, device_map=device_map,
                                                **additional_model_args)
@@ -47,7 +57,7 @@ def get_generic_model(model_id, model_class, device_map, use_quantization, custo
 
 
 def get_model(model_id, model_class, device_map, use_quantization, additional_model_args, is_gptq_model, is_gglm_model,
-              custom_quantization_conf, use_safetensors, use_triton, pass_device_map):
+              custom_quantization_conf, use_safetensors, use_triton, pass_device_map, set_dorch_dtype, torch_dtype):
     if is_gptq_model:
         return get_gptq_model(model_id, device_map, use_quantization, use_safetensors, use_triton,
                               custom_quantization_conf, additional_model_args)
@@ -55,7 +65,7 @@ def get_model(model_id, model_class, device_map, use_quantization, additional_mo
         return None
     else:
         return get_generic_model(model_id, model_class, device_map, use_quantization, custom_quantization_conf,
-                                 additional_model_args, pass_device_map)
+                                 additional_model_args, pass_device_map, set_dorch_dtype, torch_dtype)
 
 
 def get_tokenizer(model_id, tokenizer_class, additional_tokenizer_args):
