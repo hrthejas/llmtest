@@ -31,7 +31,7 @@ def record_answers(query, open_ai_answer, local_model_answer):
         pass
 
 
-def start(load_gpt_model=True, load_local_model=True, local_model_id=constants.DEFAULT_MODEL_NAME,
+def start(load_gpt_model=False, load_local_model=True, local_model_id=constants.DEFAULT_MODEL_NAME,
           docs_base_path=constants.DOCS_BASE_PATH, index_base_path=constants.INDEX_BASE_PATH,
           docs_index_name_prefix=constants.DOC_INDEX_NAME_PREFIX, api_index_name_prefix=constants.API_INDEX_NAME_PREFIX,
           max_new_tokens=constants.MAX_NEW_TOKENS, use_4bit_quantization=constants.USE_4_BIT_QUANTIZATION,
@@ -180,7 +180,7 @@ def get_vector_stores(model_embeddings, docs_base_path, index_base_path, api_ind
     return doc_vector_store, api_vector_store
 
 
-def start_qa_chain(load_gpt_model=True, load_local_model=True, local_model_id=constants.DEFAULT_MODEL_NAME,
+def start_qa_chain(load_gpt_model=False, load_local_model=True, local_model_id=constants.DEFAULT_MODEL_NAME,
                    docs_base_path=constants.DOCS_BASE_PATH, index_base_path=constants.INDEX_BASE_PATH,
                    docs_index_name_prefix=constants.DOC_INDEX_NAME_PREFIX,
                    api_index_name_prefix=constants.API_INDEX_NAME_PREFIX,
@@ -354,7 +354,7 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
     from langchain.chains.question_answering import load_qa_chain
     from langchain.prompts import PromptTemplate
 
-    api_prompt = PromptTemplate(template=constants.DEFAULT_PROMPT_WITH_CONTEXT_API_WITHOUT_AUTHENTICATION,
+    api_prompt = PromptTemplate(template=constants.QUESTION_PROMPT,
                                 input_variables=["context", "question"])
     if use_api_template_with_authentication:
         api_prompt = PromptTemplate(template=constants.DEFAULT_PROMPT_WITH_CONTEXT_API,
@@ -439,18 +439,20 @@ def start_iwx(local_model_id=constants.DEFAULT_MODEL_NAME,
               mount_gdrive=True,
               share_chat_ui=True, debug=False, gdrive_mount_base_bath=constants.GDRIVE_MOUNT_BASE_PATH,
               device_map=constants.DEFAULT_DEVICE_MAP, search_type="similarity", search_kwargs={"k": 4},
-              embedding_class=HuggingFaceInstructEmbeddings, model_name="hkunlp/instructor-large", use_queue=True):
+              embedding_class=HuggingFaceInstructEmbeddings, model_name="hkunlp/instructor-large", use_queue=True,
+              use_simple_llm_loader=False, is_gptq_model=False, custom_quantization_config=None,
+              use_triton=False, use_safetensors=False):
     if mount_gdrive:
         ingest.mountGoogleDrive(mount_location=gdrive_mount_base_bath)
 
     local_docs_qa_chain = None
     local_api_qa_chain = None
 
-    llm = startchat.get_local_model_llm(
-        model_id=local_model_id,
-        use_4bit_quantization=use_4bit_quantization,
-        set_device_map=set_device_map,
-        max_new_tokens=max_new_tokens, device_map=device_map)
+    llm = llmloader.load_llm(local_model_id, use_4bit_quantization=use_4bit_quantization, set_device_map=set_device_map,
+                             max_new_tokens=max_new_tokens, device_map=device_map,
+                             use_simple_llm_loader=use_simple_llm_loader, is_quantized_gptq_model=is_gptq_model,
+                             custom_quantiztion_config=custom_quantization_config, use_triton=use_triton,
+                             use_safetensors=use_safetensors)
 
     local_docs_qa_chain, local_api_qa_chain = get_local_qa_chain(llm, embedding_class, model_name,
                                                                  api_index_name_prefix, docs_base_path,
