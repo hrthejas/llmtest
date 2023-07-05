@@ -33,7 +33,7 @@ def get_generic_model(model_id, model_class, device_map, use_quantization, custo
             custom_quantization_conf = get_quantization_config()
 
     if use_quantization:
-        print("Loading model " + model_id + " with quantization with config " + custom_quantization_conf)
+        print("Loading model " + model_id + " with quantization")
         return model_class.from_pretrained(model_id, device_map=device_map,
                                            quantization_config=custom_quantization_conf,
                                            trust_remote_code=True, **additional_model_args)
