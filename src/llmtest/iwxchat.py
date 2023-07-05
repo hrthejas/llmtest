@@ -16,8 +16,8 @@ from langchain.embeddings import (
 )
 
 
-def get_question(user_input, use_prompt, prompt):
-    if use_prompt:
+def get_question(user_input, use_prompt, prompt,choice_selected):
+    if use_prompt and choice_selected == "API":
         return prompt + '\n' + user_input
     else:
         return user_input
@@ -463,7 +463,7 @@ def start_iwx(local_model_id=constants.DEFAULT_MODEL_NAME,
     data = [('Bad', '1'), ('Ok', '2'), ('Good', '3'), ('Very Good', '4'), ('Perfect', '5')]
 
     def chatbot(choice_selected, message):
-        query = get_question(message, use_prompt, prompt)
+        query = get_question(message, use_prompt, prompt,choice_selected)
         reference_docs = "Not populated"
         if local_api_qa_chain is not None and local_docs_qa_chain is not None:
             if choice_selected == "API":
