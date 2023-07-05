@@ -64,11 +64,11 @@ def load_llm(
     if additional_pipeline_args is None:
         additional_pipeline_args = {}
 
-    pipe = None
     if use_simple_llm_loader:
         pipe = pipeline_loader.get_pipeline_from_model_id(model_id, task, max_new_tokens, additional_model_Args,
                                                           device_map,
                                                           torch_dtype=torch.bfloat16)
+        return HuggingFacePipeline(pipeline=pipe)
     else:
         tokenizer = model_loader.get_tokenizer(model_id, tokenizer_class, additional_tokenizer_args)
         model = model_loader.get_model(model_id, model_class, device_map, use_4bit_quantization, additional_model_Args,
@@ -105,4 +105,4 @@ def load_llm(
                                                 additional_pipeline_args=additional_pipeline_args, use_fast=True,
                                                 device_map=None)
 
-    return HuggingFacePipeline(pipeline=pipe)
+        return HuggingFacePipeline(pipeline=pipe)
