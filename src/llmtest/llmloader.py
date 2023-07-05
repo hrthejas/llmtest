@@ -76,32 +76,15 @@ def load_llm(
                                        use_safetensors,
                                        use_triton, set_device_map)
 
-        additional_pipeline_args['top_k'] = top_k
-        additional_pipeline_args['num_return_sequences'] = num_return_sequences
-
-        if use_cache:
-            additional_pipeline_args['use_cache'] = use_cache
-        if do_sample:
-            additional_pipeline_args['do_sample'] = do_sample
-        if set_eos_token:
-            additional_pipeline_args['eos_token_id'] = tokenizer.eos_token_id
-        if set_pad_token:
-            additional_pipeline_args['pad_token_id'] = tokenizer.eos_token_id
-
-        print("Additional pipeline args ")
-        print(additional_pipeline_args)
-
         if set_device_map:
             print("Creating a pipeline with device map")
 
-            pipe = pipeline_loader.get_pipeline(model=model, task=task, tokenizer=tokenizer,
-                                                max_new_tokens=max_new_tokens,
-                                                additional_pipeline_args=additional_pipeline_args, use_fast=True,
-                                                device_map=device_map)
+            pipe = pipeline_loader.get_pipeline_test_props(model=model, task=task, tokenizer=tokenizer,
+                                                           max_new_tokens=max_new_tokens,
+                                                           device_map=device_map)
         else:
-            pipe = pipeline_loader.get_pipeline(model=model, task=task, tokenizer=tokenizer,
-                                                max_new_tokens=max_new_tokens,
-                                                additional_pipeline_args=additional_pipeline_args, use_fast=True,
-                                                device_map=None)
+            pipe = pipeline_loader.get_pipeline_test_props(model=model, task=task, tokenizer=tokenizer,
+                                                           max_new_tokens=max_new_tokens,
+                                                           device_map=None)
 
     return HuggingFacePipeline(pipeline=pipe)
