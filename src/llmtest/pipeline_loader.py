@@ -37,7 +37,7 @@ def get_pipeline_from_model_id(model_id, task, max_new_tokens, additional_pipeli
                                torch_dtype=None):
     if additional_pipeline_args is None:
         additional_pipeline_args = {}
-    pipe = pipeline(
+    return pipeline(
         model=model_id,
         task=task,
         device_map=device_map,
