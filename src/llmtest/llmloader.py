@@ -89,9 +89,14 @@ def load_llm(
             additional_pipeline_args['pad_token_id'] = tokenizer.eos_token_id
 
         if set_device_map:
-            pipe = pipeline_loader.get_pipeline(model, task, max_new_tokens, additional_model_Args,
+            pipe = pipeline_loader.get_pipeline(model=model, task=task, tokenizer=tokenizer,
+                                                max_new_tokens=max_new_tokens,
+                                                additional_pipeline_args=additional_pipeline_args, use_fast=True,
                                                 device_map=device_map)
         else:
-            pipe = pipeline_loader.get_pipeline(model, task, max_new_tokens, additional_model_Args, device_map=None)
+            pipe = pipeline_loader.get_pipeline(model=model, task=task, tokenizer=tokenizer,
+                                                max_new_tokens=max_new_tokens,
+                                                additional_pipeline_args=additional_pipeline_args, use_fast=True,
+                                                device_map=None)
 
     return HuggingFacePipeline(pipeline=pipe)
