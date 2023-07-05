@@ -88,7 +88,9 @@ def load_llm(
         if set_pad_token:
             additional_pipeline_args['pad_token_id'] = tokenizer.eos_token_id
 
-        print("Additional pipeline args " + additional_pipeline_args)
+        print("Additional pipeline args ")
+        print(additional_pipeline_args)
+
 
         if set_device_map:
             print("Creating a pipeline with device map")
