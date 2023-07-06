@@ -357,6 +357,14 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
     from langchain.chains.question_answering import load_qa_chain
     from langchain.prompts import PromptTemplate
 
+    api_prompt_template = constants.default_prompt
+    api_prompt = PromptTemplate(template=api_prompt_template,
+                                input_variables=["context", "question"])
+    doc_prompt_template = constants.DEFAULT_PROMPT_WITH_CONTEXT_DOC
+    doc_prompt = PromptTemplate(template=doc_prompt_template,
+                                input_variables=["context", "question"])
+
+
     if mount_gdrive:
         ingest.mountGoogleDrive(mount_location=gdrive_mount_base_bath)
 
@@ -383,15 +391,9 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
             search_results = None
             local_qa_chain = None
             if choice_selected == "API":
-                template = utils.read_prompt_text(api_prompt_file, constants.default_prompt)
-                api_prompt = PromptTemplate(template=template,
-                                            input_variables=["context", "question"])
                 search_results = local_api_vector_store.similarity_search(query)
                 local_qa_chain = load_qa_chain(llm=llm, chain_type="stuff", prompt=api_prompt)
             else:
-                template = utils.read_prompt_text(doc_prompt_file, constants.DEFAULT_PROMPT_WITH_CONTEXT_DOC)
-                doc_prompt = PromptTemplate(template=template,
-                                            input_variables=["context", "question"])
                 search_results = local_docs_vector_store.similarity_search(query)
                 local_qa_chain = load_qa_chain(llm=llm, chain_type="stuff", prompt=doc_prompt)
 
