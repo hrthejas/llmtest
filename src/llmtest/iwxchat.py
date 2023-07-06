@@ -37,7 +37,7 @@ def start(load_gpt_model=False, load_local_model=True, local_model_id=constants.
           docs_base_path=constants.DOCS_BASE_PATH, index_base_path=constants.INDEX_BASE_PATH,
           docs_index_name_prefix=constants.DOC_INDEX_NAME_PREFIX, api_index_name_prefix=constants.API_INDEX_NAME_PREFIX,
           max_new_tokens=constants.MAX_NEW_TOKENS, use_4bit_quantization=constants.USE_4_BIT_QUANTIZATION,
-          use_prompt=False, prompt=constants.QUESTION_PROMPT, set_device_map=constants.SET_DEVICE_MAP,
+          use_prompt=False, prompt=constants.API_QUESTION_PROMPT, set_device_map=constants.SET_DEVICE_MAP,
           mount_gdrive=True,
           share_chat_ui=True, debug=False, gdrive_mount_base_bath=constants.GDRIVE_MOUNT_BASE_PATH,
           device_map=constants.DEFAULT_DEVICE_MAP, search_type="similarity", search_kwargs={"k": 4},
@@ -83,7 +83,7 @@ def start(load_gpt_model=False, load_local_model=True, local_model_id=constants.
                 [user_message, None]]
 
         def bot_1(history_1, choice_selected):
-            query = get_question(history_1[-1][0], use_prompt, prompt)
+            query = get_question(history_1[-1][0], use_prompt, prompt, choice_selected)
             if openai_api_qa_chain is not None and openai_docs_qa_chain is not None:
                 if choice_selected == "API":
                     bot_message = startchat.get_chat_gpt_result(openai_api_qa_chain, query)['result']
@@ -98,7 +98,7 @@ def start(load_gpt_model=False, load_local_model=True, local_model_id=constants.
                 yield history_1
 
         def bot_2(history_1, history_2, choice_selected):
-            query = get_question(history_2[-1][0], use_prompt, prompt)
+            query = get_question(history_2[-1][0], use_prompt, prompt, choice_selected)
             if local_api_qa_chain is not None and local_docs_qa_chain is not None:
                 if choice_selected == "API":
                     bot_message = startchat.get_local_model_result(local_api_qa_chain, query)['result']
@@ -195,9 +195,9 @@ def start_qa_chain(load_gpt_model=False, load_local_model=True, local_model_id=c
     from langchain.chains.question_answering import load_qa_chain
     from langchain.prompts import PromptTemplate
 
-    api_prompt = PromptTemplate(template=constants.DEFAULT_PROMPT_WITH_CONTEXT_API,
+    api_prompt = PromptTemplate(template=constants.API_QUESTION_PROMPT,
                                 input_variables=["context", "question"])
-    doc_prompt = PromptTemplate(template=constants.DEFAULT_PROMPT_WITH_CONTEXT_DOC,
+    doc_prompt = PromptTemplate(template=constants.DOC_QUESTION_PROMPT,
                                 input_variables=["context", "question"])
 
     if mount_gdrive:
@@ -351,19 +351,16 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
                         device_map=constants.DEFAULT_DEVICE_MAP, use_simple_llm_loader=False,
                         embedding_class=HuggingFaceInstructEmbeddings, model_name="hkunlp/instructor-large",
                         use_queue=True, is_gptq_model=False, custom_quantization_config=None, use_safetensors=False,
-                        use_triton=False, set_torch_dtype=False, torch_dtype=torch.bfloat16,
-                        api_prompt_file=constants.API_PROMPT_FILE,
-                        doc_prompt_file=constants.DOCS_PROMPT_FILE):
+                        use_triton=False, set_torch_dtype=False, torch_dtype=torch.bfloat16):
     from langchain.chains.question_answering import load_qa_chain
     from langchain.prompts import PromptTemplate
 
-    api_prompt_template = constants.default_prompt
+    api_prompt_template = constants.API_QUESTION_PROMPT
     api_prompt = PromptTemplate(template=api_prompt_template,
                                 input_variables=["context", "question"])
-    doc_prompt_template = constants.DEFAULT_PROMPT_WITH_CONTEXT_DOC
+    doc_prompt_template = constants.DOC_QUESTION_PROMPT
     doc_prompt = PromptTemplate(template=doc_prompt_template,
                                 input_variables=["context", "question"])
-
 
     if mount_gdrive:
         ingest.mountGoogleDrive(mount_location=gdrive_mount_base_bath)
@@ -443,8 +440,8 @@ def start_iwx(local_model_id=constants.DEFAULT_MODEL_NAME,
               device_map=constants.DEFAULT_DEVICE_MAP, search_type="similarity", search_kwargs={"k": 4},
               embedding_class=HuggingFaceInstructEmbeddings, model_name="hkunlp/instructor-large", use_queue=True,
               use_simple_llm_loader=False, is_gptq_model=False, custom_quantization_config=None,
-              use_triton=False, use_safetensors=False, set_torch_dtype=False, torch_dtype=torch.bfloat16,
-              prompt_file_pth=constants.API_PROMPT_FILE):
+              use_triton=False, use_safetensors=False, set_torch_dtype=False, torch_dtype=torch.bfloat16
+              ):
     if mount_gdrive:
         ingest.mountGoogleDrive(mount_location=gdrive_mount_base_bath)
 
@@ -466,7 +463,7 @@ def start_iwx(local_model_id=constants.DEFAULT_MODEL_NAME,
     data = [('Bad', '1'), ('Ok', '2'), ('Good', '3'), ('Very Good', '4'), ('Perfect', '5')]
 
     def chatbot(choice_selected, message):
-        query = get_question(message, use_prompt, utils.read_prompt_text(prompt_file_pth, constants.default_prompt),
+        query = get_question(message, use_prompt, constants.API_QUESTION_PROMPT,
                              choice_selected)
         reference_docs = "Not populated"
         if local_api_qa_chain is not None and local_docs_qa_chain is not None:
