@@ -383,12 +383,14 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
             search_results = None
             local_qa_chain = None
             if choice_selected == "API":
-                api_prompt = PromptTemplate(template=utils.read_prompt_text(api_prompt_file),
+                template = utils.read_prompt_text(api_prompt_file, constants.default_prompt)
+                api_prompt = PromptTemplate(template=template,
                                             input_variables=["context", "question"])
                 search_results = local_api_vector_store.similarity_search(query)
                 local_qa_chain = load_qa_chain(llm=llm, chain_type="stuff", prompt=api_prompt)
             else:
-                doc_prompt = PromptTemplate(template=utils.read_prompt_text(doc_prompt_file),
+                template = utils.read_prompt_text(doc_prompt_file, constants.DEFAULT_PROMPT_WITH_CONTEXT_DOC)
+                doc_prompt = PromptTemplate(template=template,
                                             input_variables=["context", "question"])
                 search_results = local_docs_vector_store.similarity_search(query)
                 local_qa_chain = load_qa_chain(llm=llm, chain_type="stuff", prompt=doc_prompt)
@@ -462,7 +464,8 @@ def start_iwx(local_model_id=constants.DEFAULT_MODEL_NAME,
     data = [('Bad', '1'), ('Ok', '2'), ('Good', '3'), ('Very Good', '4'), ('Perfect', '5')]
 
     def chatbot(choice_selected, message):
-        query = get_question(message, use_prompt, utils.read_prompt_text(prompt_file_pth), choice_selected)
+        query = get_question(message, use_prompt, utils.read_prompt_text(prompt_file_pth, constants.default_prompt),
+                             choice_selected)
         reference_docs = "Not populated"
         if local_api_qa_chain is not None and local_docs_qa_chain is not None:
             if choice_selected == "API":
