@@ -1,5 +1,5 @@
 import os
-from llmtest import constants
+from langchain.prompts import load_prompt
 
 
 def read_prompt_text(prompt_file_path,default_template):
@@ -13,3 +13,9 @@ def read_prompt_text(prompt_file_path,default_template):
     else:
         print("Cannot open prompt file " + prompt_file_path + " defaulting to default prompt")
         return default_template
+
+
+def load_prompt(prompt_file_path):
+    prompt = load_prompt(prompt_file_path)
+    print(prompt.value)
+    return prompt

@@ -383,17 +383,17 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
             search_results = None
             local_qa_chain = None
             if choice_selected == "API":
-                template = utils.read_prompt_text(api_prompt_file, constants.default_prompt)
-                api_prompt = PromptTemplate(template=template,
-                                            input_variables=["context", "question"])
+                # template = utils.read_prompt_text(api_prompt_file, constants.default_prompt)
+                # api_prompt = PromptTemplate(template=template,
+                #                             input_variables=["context", "question"])
                 search_results = local_api_vector_store.similarity_search(query)
-                local_qa_chain = load_qa_chain(llm=llm, chain_type="stuff", prompt=api_prompt)
+                local_qa_chain = load_qa_chain(llm=llm, chain_type="stuff", prompt=utils.load_prompt(api_prompt_file))
             else:
-                template = utils.read_prompt_text(doc_prompt_file, constants.DEFAULT_PROMPT_WITH_CONTEXT_DOC)
-                doc_prompt = PromptTemplate(template=template,
-                                            input_variables=["context", "question"])
+                # template = utils.read_prompt_text(doc_prompt_file, constants.DEFAULT_PROMPT_WITH_CONTEXT_DOC)
+                # doc_prompt = PromptTemplate(template=template,
+                #                             input_variables=["context", "question"])
                 search_results = local_docs_vector_store.similarity_search(query)
-                local_qa_chain = load_qa_chain(llm=llm, chain_type="stuff", prompt=doc_prompt)
+                local_qa_chain = load_qa_chain(llm=llm, chain_type="stuff", prompt=utils.load_prompt(doc_prompt_file))
 
             if local_qa_chain is not None and search_results is not None:
                 result = local_qa_chain({"input_documents": search_results, "question": query})
@@ -442,7 +442,7 @@ def start_iwx(local_model_id=constants.DEFAULT_MODEL_NAME,
               embedding_class=HuggingFaceInstructEmbeddings, model_name="hkunlp/instructor-large", use_queue=True,
               use_simple_llm_loader=False, is_gptq_model=False, custom_quantization_config=None,
               use_triton=False, use_safetensors=False, set_torch_dtype=False, torch_dtype=torch.bfloat16,
-              prompt_file_pth=constants.API_PROMPT_FILE):
+              prompt_file_path=constants.API_PROMPT_FILE):
     if mount_gdrive:
         ingest.mountGoogleDrive(mount_location=gdrive_mount_base_bath)
 
