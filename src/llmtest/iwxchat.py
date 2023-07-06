@@ -9,7 +9,7 @@ from gradio.components import IOComponent
 from typing import Any
 from transformers import pipeline
 
-from llmtest import constants, startchat, ingest, storage, embeddings, vectorstore, llmloader
+from llmtest import constants, startchat, ingest, storage, embeddings, vectorstore, llmloader, utils
 
 from langchain.embeddings import (
     HuggingFaceEmbeddings,
@@ -349,21 +349,12 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
                         mount_gdrive=True,
                         share_chat_ui=True, debug=False, gdrive_mount_base_bath=constants.GDRIVE_MOUNT_BASE_PATH,
                         device_map=constants.DEFAULT_DEVICE_MAP, use_simple_llm_loader=False,
-                        use_api_template_with_authentication=False,
                         embedding_class=HuggingFaceInstructEmbeddings, model_name="hkunlp/instructor-large",
                         use_queue=True, is_gptq_model=False, custom_quantization_config=None, use_safetensors=False,
-                        use_triton=False, set_torch_dtype=False, torch_dtype=torch.bfloat16):
+                        use_triton=False, set_torch_dtype=False, torch_dtype=torch.bfloat16,api_prompt_file=constants.API_PROMPT_FILE,
+                        doc_prompt_file=constants.DOCS_PROMPT_FILE):
     from langchain.chains.question_answering import load_qa_chain
     from langchain.prompts import PromptTemplate
-
-    api_prompt = PromptTemplate(template=constants.QUESTION_PROMPT,
-                                input_variables=["context", "question"])
-    if use_api_template_with_authentication:
-        api_prompt = PromptTemplate(template=constants.DEFAULT_PROMPT_WITH_CONTEXT_API,
-                                    input_variables=["context", "question"])
-
-    doc_prompt = PromptTemplate(template=constants.DEFAULT_PROMPT_WITH_CONTEXT_DOC,
-                                input_variables=["context", "question"])
 
     if mount_gdrive:
         ingest.mountGoogleDrive(mount_location=gdrive_mount_base_bath)
@@ -391,9 +382,13 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
             search_results = None
             local_qa_chain = None
             if choice_selected == "API":
+                api_prompt = PromptTemplate(template=utils.read_prompt_text(api_prompt_file),
+                                            input_variables=["context", "question"])
                 search_results = local_api_vector_store.similarity_search(query)
                 local_qa_chain = load_qa_chain(llm=llm, chain_type="stuff", prompt=api_prompt)
             else:
+                doc_prompt = PromptTemplate(template=utils.read_prompt_text(doc_prompt_file),
+                                            input_variables=["context", "question"])
                 search_results = local_docs_vector_store.similarity_search(query)
                 local_qa_chain = load_qa_chain(llm=llm, chain_type="stuff", prompt=doc_prompt)
 
@@ -437,13 +432,13 @@ def start_iwx(local_model_id=constants.DEFAULT_MODEL_NAME,
               docs_index_name_prefix=constants.DOC_INDEX_NAME_PREFIX,
               api_index_name_prefix=constants.API_INDEX_NAME_PREFIX,
               max_new_tokens=constants.MAX_NEW_TOKENS, use_4bit_quantization=constants.USE_4_BIT_QUANTIZATION,
-              use_prompt=False, prompt=constants.QUESTION_PROMPT, set_device_map=constants.SET_DEVICE_MAP,
+              use_prompt=False, set_device_map=constants.SET_DEVICE_MAP,
               mount_gdrive=True,
               share_chat_ui=True, debug=False, gdrive_mount_base_bath=constants.GDRIVE_MOUNT_BASE_PATH,
               device_map=constants.DEFAULT_DEVICE_MAP, search_type="similarity", search_kwargs={"k": 4},
               embedding_class=HuggingFaceInstructEmbeddings, model_name="hkunlp/instructor-large", use_queue=True,
               use_simple_llm_loader=False, is_gptq_model=False, custom_quantization_config=None,
-              use_triton=False, use_safetensors=False,set_torch_dtype=False, torch_dtype=torch.bfloat16):
+              use_triton=False, use_safetensors=False,set_torch_dtype=False, torch_dtype=torch.bfloat16,prompt_file_pth=constants.API_PROMPT_FILE):
     if mount_gdrive:
         ingest.mountGoogleDrive(mount_location=gdrive_mount_base_bath)
 
@@ -465,7 +460,7 @@ def start_iwx(local_model_id=constants.DEFAULT_MODEL_NAME,
     data = [('Bad', '1'), ('Ok', '2'), ('Good', '3'), ('Very Good', '4'), ('Perfect', '5')]
 
     def chatbot(choice_selected, message):
-        query = get_question(message, use_prompt, prompt, choice_selected)
+        query = get_question(message, use_prompt, utils.read_prompt_text(prompt_file_pth), choice_selected)
         reference_docs = "Not populated"
         if local_api_qa_chain is not None and local_docs_qa_chain is not None:
             if choice_selected == "API":

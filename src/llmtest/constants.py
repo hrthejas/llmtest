@@ -370,3 +370,8 @@ DEFAULT_GPTQ_QUANTIZED_MODEL_CONF = {'device': "cuda:0", "use_safetensors": Fals
 DEFAULT_GPTQ_QUANTIZED_PIPE_CONF = {'task': 'text-generation'}
 
 QUESTION_PROMPT = env.str("QUESTION_PROMPT", default_prompt)
+
+API_PROMPT_FILE = env.str("API_PROMPT_FILE",
+                          "/content/drive/Shareddrives/Engineering/Chatbot/thejas/prompts/api_prompts.txt")
+DOCS_PROMPT_FILE = env.str("DOCS_PROMPT_FILE",
+                          "/content/drive/Shareddrives/Engineering/Chatbot/thejas/prompts/doc_prompts.txt")
