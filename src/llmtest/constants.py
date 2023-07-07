@@ -166,6 +166,6 @@ DEFAULT_CSV_PARSE_ARGS = {
         "fieldnames": ["Method", "Path", "Operation", "Description", "Query Parameters", "Request Parameters"],
     }
 
-CSV_DOC_PARSE_ARGS = env.str("CSV_DOC_PARSE_ARGS", DEFAULT_CSV_PARSE_ARGS)
+CSV_DOC_PARSE_ARGS = env.dict("CSV_DOC_PARSE_ARGS", DEFAULT_CSV_PARSE_ARGS)
 
 CSV_DOC_EMBEDDING_SOURCE_COLUMN = env.str("CSV_DOC_EMBEDDING_SOURCE_COLUMN", "Description")
