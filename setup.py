@@ -56,7 +56,9 @@ setup(
         "gradio",
         "IPython",
         "openai",
-        "mysql-connector-python"
+        "mysql-connector-python",
+        "jq",
+        "auto_gptq"
     ],
     extras_require=extras,
     classifiers=[

@@ -14,6 +14,9 @@ class MysqlLogger(FlaggingCallback):
         self.flagging_dir = flagging_dir
         print("here in setup")
 
+    def test(self):
+        print("hello")
+
     def flag(
             self,
             flag_data: list[Any],

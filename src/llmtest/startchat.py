@@ -1,24 +1,20 @@
 from IPython.display import display, Markdown
-import os
-from getpass import getpass
-
-from IPython.display import display, Markdown
 from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOpenAI
 
-from llmtest import llmloader, vectorstore, constants
+from llmtest import constants
 
 
-def get_local_model_llm(model_id=constants.DEFAULT_MODEL_NAME,
-                        use_4bit_quantization=constants.USE_4_BIT_QUANTIZATION,
-                        set_device_map=constants.SET_DEVICE_MAP,
-                        max_new_tokens=constants.MAX_NEW_TOKENS, device_map=constants.DEFAULT_DEVICE_MAP,
-                        use_simple_llm_loader=False):
-    return llmloader.getLLM(
-        model_id=model_id,
-        use_4bit_quantization=use_4bit_quantization,
-        set_device_map=set_device_map,
-        max_new_tokens=max_new_tokens, device_map=device_map, use_simple_llm_loader=use_simple_llm_loader)
+# def get_local_model_llm(model_id=constants.DEFAULT_MODEL_NAME,
+#                         use_4bit_quantization=constants.USE_4_BIT_QUANTIZATION,
+#                         set_device_map=constants.SET_DEVICE_MAP,
+#                         max_new_tokens=constants.MAX_NEW_TOKENS, device_map=constants.DEFAULT_DEVICE_MAP,
+#                         use_simple_llm_loader=False):
+#     return llmloader.getLLM(
+#         model_id=model_id,
+#         use_4bit_quantization=use_4bit_quantization,
+#         set_device_map=set_device_map,
+#         max_new_tokens=max_new_tokens, device_map=device_map, use_simple_llm_loader=use_simple_llm_loader)
 
 
 def get_openai_model_llm():
@@ -26,17 +22,17 @@ def get_openai_model_llm():
                       max_tokens=constants.MAX_NEW_TOKENS)
 
 
-def get_local_model_qa_chain(retriever, model_id=constants.DEFAULT_MODEL_NAME,
-                             use_4bit_quantization=constants.USE_4_BIT_QUANTIZATION,
-                             set_device_map=constants.SET_DEVICE_MAP,
-                             max_new_tokens=constants.MAX_NEW_TOKENS, device_map=constants.DEFAULT_DEVICE_MAP):
-    llm = get_local_model_llm(
-        model_id=model_id,
-        use_4bit_quantization=use_4bit_quantization,
-        set_device_map=set_device_map,
-        max_new_tokens=max_new_tokens, device_map=device_map)
-
-    return RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever, return_source_documents=True)
+# def get_local_model_qa_chain(retriever, model_id=constants.DEFAULT_MODEL_NAME,
+#                              use_4bit_quantization=constants.USE_4_BIT_QUANTIZATION,
+#                              set_device_map=constants.SET_DEVICE_MAP,
+#                              max_new_tokens=constants.MAX_NEW_TOKENS, device_map=constants.DEFAULT_DEVICE_MAP):
+#     llm = get_local_model_llm(
+#         model_id=model_id,
+#         use_4bit_quantization=use_4bit_quantization,
+#         set_device_map=set_device_map,
+#         max_new_tokens=max_new_tokens, device_map=device_map)
+#
+#     return RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever, return_source_documents=True)
 
 
 def get_openai_model_qa_chain(llm, retriever):
@@ -53,7 +49,7 @@ def get_chat_gpt_result(qa, final_question):
 
 def get_prompt():
     from langchain.prompts import PromptTemplate
-    prompt = PromptTemplate(template=constants.DEFAULT_PROMPT_WITH_CONTEXT, input_variables=["context", "question"])
+    prompt = PromptTemplate(template=constants.API_QUESTION_PROMPT, input_variables=["context", "question"])
     return prompt
 
 
@@ -73,16 +69,11 @@ def get_chain(llm, prompt, chain_type="stuff"):
 
 
 def get_chat_gpt_result_using_chin(qa, final_question):
-    from langchain.chains.qa_with_sources import load_qa_with_sources_chain
-    from langchain.chains.question_answering import load_qa_chain
-    from langchain import HuggingFacePipeline
-    from langchain.prompts import PromptTemplate
-    from langchain.chains import RetrievalQA
     return qa(final_question)
 
 
 def get_answers(local_qa=None, openai_qa=None, question="list all environments in infoworks", use_prompt=True,
-                prompt=constants.QUESTION_PROMPT):
+                prompt=constants.API_QUESTION_PROMPT):
     if use_prompt:
         final_question = prompt + '\n' + question
     else:
