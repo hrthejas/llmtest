@@ -7,7 +7,7 @@ MAX_NEW_TOKENS = env.int("MAX_NEW_TOKENS", 350)
 DOCS_BASE_PATH = env.str("DOCS_BASE_PATH", "/content/drive/Shareddrives/Engineering/Chatbot/thejas/data/")
 INDEX_BASE_PATH = env.str("INDEX_BASE_PATH", "/content/drive/Shareddrives/Engineering/Chatbot/thejas/indexes/")
 DOC_INDEX_NAME_PREFIX = env.str("DOC_INDEX_NAME_PREFIX", "doc_index")
-API_INDEX_NAME_PREFIX = env.str("API_INDEX_NAME_PREFIX", "api_index")
+API_INDEX_NAME_PREFIX = env.str("API_INDEX_NAME_PREFIX", ("api_index"))
 DEFAULT_MODEL_NAME = env.str("DEFAULT_MODEL_NAME", "thr10/thr-wlm-15b-3gb")
 USE_4_BIT_QUANTIZATION = env.bool("USE_4_BIT_QUANTIZATION", True)
 SET_DEVICE_MAP = env.bool("SET_DEVICE_MAP", True)
@@ -161,4 +161,11 @@ Question: {question}
 API_QUESTION_PROMPT = env.str("API_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_API)
 DOC_QUESTION_PROMPT = env.str("DOC_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_DOC)
 
+DEFAULT_CSV_PARSE_ARGS = {
+        "delimiter": ",",
+        "fieldnames": ["Method", "Path", "Operation", "Description", "Query Parameters", "Request Parameters"],
+    }
 
+CSV_DOC_PARSE_ARGS = env.str("CSV_DOC_PARSE_ARGS", DEFAULT_CSV_PARSE_ARGS)
+
+CSV_DOC_EMBEDDING_SOURCE_COLUMN = env.str("CSV_DOC_EMBEDDING_SOURCE_COLUMN", "Description")
