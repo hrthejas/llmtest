@@ -86,6 +86,7 @@ class ChatApp:
 
         self.doc_prompt = PromptTemplate(template=self.doc_prompt_template,
                                          input_variables=["context", "question"])
+        pass
 
     def query_llm(self, answer_type, query, similarity_search_k=4):
         reference_docs = ""
