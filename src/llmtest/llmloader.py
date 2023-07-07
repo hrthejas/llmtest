@@ -33,6 +33,8 @@ def get_llm(model_id,
                                    is_gptq_model, is_gglm_model, custom_quantization_config, use_safetensors,
                                    use_triton, pass_device_map)
     pipeline = pipeline_loader.get_pipeline(model, task, tokenizer, max_new_tokens, additional_pipeline_args)
+
+    AutoModelForCausalLM.from_pretrained()
     return HuggingFacePipeline(pipeline=pipeline)
 
 
