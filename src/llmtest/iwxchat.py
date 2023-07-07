@@ -235,7 +235,7 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
     interface.launch(debug=debug, share=share_chat_ui)
 
 
-def query_llm(llm, api_prompt, doc_prompt, api_vector_stores, doc_vector_store, answer_type, query):
+def query_llm(llm, api_prompt, doc_prompt, api_vector_stores, doc_vector_stores, answer_type, query,similarity_search_k=4):
     from langchain.chains.question_answering import load_qa_chain
     reference_docs = ""
     if llm is not None:
@@ -244,12 +244,16 @@ def query_llm(llm, api_prompt, doc_prompt, api_vector_stores, doc_vector_store, 
         if answer_type == "API":
             for api_vector_store in api_vector_stores:
                 if search_results is None:
-                    search_results = api_vector_store.similarity_search(query)
+                    search_results = api_vector_store.similarity_search(query,k=similarity_search_k)
                 else:
-                    search_results = search_results + api_vector_store.similarity_search(query)
+                    search_results = search_results + api_vector_store.similarity_search(query,k=similarity_search_k)
             local_qa_chain = load_qa_chain(llm=llm, chain_type="stuff", prompt=api_prompt)
         else:
-            search_results = doc_vector_store.similarity_search(query)
+            for doc_vector_store in doc_vector_stores:
+                if search_results is None:
+                    search_results = doc_vector_store.similarity_search(query,k=similarity_search_k)
+                else:
+                    search_results = search_results + doc_vector_store.similarity_search(queryk=similarity_search_k)
             local_qa_chain = load_qa_chain(llm=llm, chain_type="stuff", prompt=doc_prompt)
 
         if local_qa_chain is not None and search_results is not None:
