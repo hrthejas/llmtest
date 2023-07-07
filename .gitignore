@@ -51,3 +51,7 @@ local_settings.py
 
 # Flask stuff:
 instance/
+
+.idea
+
+.vscode
