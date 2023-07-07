@@ -162,11 +162,14 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
 
     index_base_path = index_base_path + "/hf/"
 
-    local_docs_vector_store = vectorstore.get_vector_store(index_base_path=index_base_path,
-                                                           index_name_prefix=docs_index_name_prefix,
-                                                           docs_base_path=docs_base_path, embeddings=hf_embeddings)
+    local_doc_vector_stores = []
+    for prefix in docs_index_name_prefix:
+        local_doc_vector_stores.append(vectorstore.get_vector_store(index_base_path=index_base_path,
+                                                                    index_name_prefix=prefix,
+                                                                    docs_base_path=docs_base_path,
+                                                                    embeddings=hf_embeddings))
 
-    local_api_vector_stores = list()
+    local_api_vector_stores = []
     for prefix in api_index_name_prefix:
         local_api_vector_stores.append(vectorstore.get_vector_store(index_base_path=index_base_path,
                                                                    index_name_prefix=prefix,
@@ -190,7 +193,11 @@ def start_iwx_only_chat(local_model_id=constants.DEFAULT_MODEL_NAME,
                         search_results = search_results + api_vector_store.similarity_search(query)
                 local_qa_chain = load_qa_chain(llm=llm, chain_type="stuff", prompt=api_prompt)
             else:
-                search_results = local_docs_vector_store.similarity_search(query)
+                for doc_vector_store in local_doc_vector_stores:
+                    if search_results is None:
+                        search_results = doc_vector_store.similarity_search(query)
+                    else:
+                        search_results = search_results + doc_vector_store.similarity_search(query)
                 local_qa_chain = load_qa_chain(llm=llm, chain_type="stuff", prompt=doc_prompt)
 
             if local_qa_chain is not None and search_results is not None:
