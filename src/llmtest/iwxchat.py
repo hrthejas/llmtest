@@ -297,3 +297,33 @@ def start_iwx(local_model_id=constants.DEFAULT_MODEL_NAME,
         interface.queue().launch(debug=debug, share=share_chat_ui)
     else:
         interface.launch(debug=debug, share=share_chat_ui)
+
+
+def query_llm(llm, api_prompt, doc_prompt, api_vector_stores, doc_vector_store, answer_type, query):
+    from langchain.chains.question_answering import load_qa_chain
+    reference_docs = ""
+    if llm is not None:
+        search_results = None
+        local_qa_chain = None
+        if answer_type == "API":
+            for api_vector_store in api_vector_stores:
+                if search_results is None:
+                    search_results = api_vector_store.similarity_search(query)
+                else:
+                    search_results = search_results + api_vector_store.similarity_search(query)
+            local_qa_chain = load_qa_chain(llm=llm, chain_type="stuff", prompt=api_prompt)
+        else:
+            search_results = doc_vector_store.similarity_search(query)
+            local_qa_chain = load_qa_chain(llm=llm, chain_type="stuff", prompt=doc_prompt)
+
+        if local_qa_chain is not None and search_results is not None:
+            result = local_qa_chain({"input_documents": search_results, "question": query})
+            bot_message = result["output_text"]
+            for doc in search_results:
+                reference_docs = reference_docs + '\n' + str(doc.metadata.get('source'))
+        else:
+            bot_message = "No matching docs found on the vector store"
+    else:
+        bot_message = "Seams like iwxchat model is not loaded or not requested to give answer"
+    # record_answers(query, "OPen AI Not configured", bot_message)
+    return bot_message, reference_docs
