@@ -88,7 +88,14 @@ class ChatApp:
                                          input_variables=["context", "question"])
         pass
 
-    def query_llm(self, answer_type, query, similarity_search_k=4):
+    def query_llm(self, answer_type, query, similarity_search_k=4, api_prompt=None,
+                  doc_prompt=None):
+
+        if api_prompt is None:
+            api_prompt = self.api_prompt
+        if doc_prompt is None:
+            doc_prompt = self.doc_prompt
+
         reference_docs = ""
         if self.llm_model is not None:
             search_results = None
@@ -100,14 +107,14 @@ class ChatApp:
                     else:
                         search_results = search_results + api_vector_store.similarity_search(query,
                                                                                              k=similarity_search_k)
-                local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=self.api_prompt)
+                local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=api_prompt)
             else:
                 for doc_vector_store in self.doc_vector_stores:
                     if search_results is None:
                         search_results = doc_vector_store.similarity_search(query, k=similarity_search_k)
                     else:
                         search_results = search_results + doc_vector_store.similarity_search(queryk=similarity_search_k)
-                local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=self.doc_prompt)
+                local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=doc_prompt)
 
             if local_qa_chain is not None and search_results is not None:
                 result = local_qa_chain({"input_documents": search_results, "question": query})
@@ -119,3 +126,13 @@ class ChatApp:
         else:
             bot_message = "Seams like iwxchat model is not loaded or not requested to give answer"
         return bot_message, reference_docs
+
+    def query_llm_with_prompt(self, answer_type, query, similarity_search_k=4,
+                              api_prompt_template=constants.API_QUESTION_PROMPT,
+                              doc_prompt_template=constants.DOC_QUESTION_PROMPT):
+        api_prompt = PromptTemplate(template=api_prompt_template,
+                                    input_variables=["context", "question"])
+
+        doc_prompt = PromptTemplate(template=doc_prompt_template,
+                                    input_variables=["context", "question"])
+        return self.query_llm(answer_type,query,similarity_search_k,api_prompt,doc_prompt)
