@@ -1,8 +1,7 @@
 import torch
-from llmtest import llmloader, constants, vectorstore, ingest, iwxchat, embeddings
+from llmtest import llmloader, constants, vectorstore, ingest, embeddings
 from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
-from langchain.chains.question_answering import load_qa_chain
 from langchain.embeddings import (
     HuggingFaceInstructEmbeddings
 )
@@ -45,9 +44,6 @@ class ChatApp:
     api_prompt_template = constants.API_QUESTION_PROMPT
     doc_prompt_template = constants.DOC_QUESTION_PROMPT
 
-    def __setitem__(self, key, value):
-        self.key = value
-
     def __getitem__(self, item):
         return item
 
@@ -55,7 +51,8 @@ class ChatApp:
         if len(kwargs) > 0:
             valid_kwargs = {name: kwargs.pop(name) for name in self.app_args if name in kwargs}
             for key, value in valid_kwargs.items():
-                self[key] = value
+                if hasattr(self, key):
+                    setattr(self, key, value)
 
         self.llm_model = llmloader.load_llm(self.model_id, use_4bit_quantization=self.use_4bit_quantization,
                                             set_device_map=self.set_device_map,
@@ -91,7 +88,6 @@ class ChatApp:
                                          input_variables=["context", "question"])
 
     def query_llm(self, answer_type, query, similarity_search_k=4):
-        from langchain.chains.question_answering import load_qa_chain
         reference_docs = ""
         if self.llm_model is not None:
             search_results = None
