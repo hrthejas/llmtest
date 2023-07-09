@@ -144,9 +144,10 @@ class IWXBot:
         return bot_message, reference_docs
 
     def ask_with_prompt(self, answer_type, query, similarity_search_k=4,
-                        api_prompt_template=constants.API_QUESTION_PROMPT,
-                        doc_prompt_template=constants.DOC_QUESTION_PROMPT,
-                        code_prompt_template=constants.DEFAULT_PROMPT_FOR_CODE):
+                        api_prompt_template=api_prompt_template,
+                        doc_prompt_template=doc_prompt_template,
+                        code_prompt_template=code_prompt_template):
+
         api_prompt = PromptTemplate(template=api_prompt_template,
                                     input_variables=["context", "question"])
 
