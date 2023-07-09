@@ -1,10 +1,13 @@
 import torch
+import gradio as gr
 from llmtest import llmloader, constants, vectorstore, ingest, embeddings
 from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
 from langchain.embeddings import (
     HuggingFaceInstructEmbeddings
 )
+
+from llmtest.MysqlLogger import MysqlLogger
 
 
 class IWXBot:
@@ -135,6 +138,9 @@ class IWXBot:
                 bot_message = "No matching docs found on the vector store"
         else:
             bot_message = "Seams like iwxchat model is not loaded or not requested to give answer"
+
+        print(bot_message)
+        print(reference_docs)
         return bot_message, reference_docs
 
     def ask_with_prompt(self, answer_type, query, similarity_search_k=4,
@@ -151,3 +157,36 @@ class IWXBot:
                                      input_variables=["context", "question"])
 
         return self.ask(answer_type, query, similarity_search_k, api_prompt, doc_prompt, code_prompt)
+
+    def start_chat(self, debug=True, use_queue=False, share_ui=True, similarity_search_k=1, record_feedback=True):
+        choices = ['API', 'Docs', 'Code']
+        data = [('Bad', '1'), ('Ok', '2'), ('Good', '3'), ('Very Good', '4'), ('Perfect', '5')]
+
+        def chatbot(choice_selected, message):
+            return self.ask(choice_selected, message, similarity_search_k=similarity_search_k)
+
+        msg = gr.Textbox(label="User Question")
+        submit = gr.Button("Submit")
+        choice = gr.inputs.Dropdown(choices=choices, default="Docs", label="Choose question Type")
+        output_textbox = gr.outputs.Textbox(label="IWX Bot")
+        output_textbox.show_copy_button = True
+        output_textbox.lines = 10
+        output_textbox.max_lines = 10
+
+        output_textbox1 = gr.outputs.Textbox(label="Reference Docs")
+        output_textbox1.lines = 2
+        output_textbox1.max_lines = 2
+
+        if record_feedback:
+            interface = gr.Interface(fn=chatbot, inputs=[choice, msg], outputs=[output_textbox, output_textbox1],
+                                 theme="gradio/monochrome",
+                                 title="IWX CHATBOT", allow_flagging="manual", flagging_callback=MysqlLogger(),
+                                 flagging_options=data)
+        else:
+            interface = gr.Interface(fn=chatbot, inputs=[choice, msg], outputs=[output_textbox, output_textbox1],
+                                 theme="gradio/monochrome",
+                                 title="IWX CHATBOT", allow_flagging="never")
+        if use_queue:
+            interface.queue().launch(debug=debug, share=share_ui)
+        else:
+            interface.launch(debug=debug, share=share_ui)

@@ -33,6 +33,9 @@ class MysqlLogger(FlaggingCallback):
                 )
             )
         data.append(flag_option)
-        storage.insert_with_rating(constants.USER_NAME, data[0], data[1], data[2], data[3], data[4])
+        if len(data[1]) > 0 and len(data[2]) > 0:
+            storage.insert_with_rating(constants.USER_NAME, data[0], data[1], data[2], data[3], data[4])
+        else:
+            print("no data to log")
 
         return 1
