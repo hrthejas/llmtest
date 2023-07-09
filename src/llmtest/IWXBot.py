@@ -110,7 +110,7 @@ class IWXBot:
         if self.llm_model is not None:
             search_results = None
             local_qa_chain = None
-            if answer_type == "API" or answer_type == "CODE":
+            if answer_type == "API" or answer_type == "Code":
                 for api_vector_store in self.api_vector_stores:
                     if search_results is None:
                         search_results = api_vector_store.similarity_search(query, k=similarity_search_k)
@@ -158,12 +158,18 @@ class IWXBot:
 
         return self.ask(answer_type, query, similarity_search_k, api_prompt, doc_prompt, code_prompt)
 
-    def start_chat(self, debug=True, use_queue=False, share_ui=True, similarity_search_k=1, record_feedback=True):
+    def start_chat(self, debug=True, use_queue=False, share_ui=True, similarity_search_k=1, record_feedback=True,
+                   api_prompt_template=constants.API_QUESTION_PROMPT,
+                   doc_prompt_template=constants.DOC_QUESTION_PROMPT,
+                   code_prompt_template=constants.DEFAULT_PROMPT_FOR_CODE):
         choices = ['API', 'Docs', 'Code']
         data = [('Bad', '1'), ('Ok', '2'), ('Good', '3'), ('Very Good', '4'), ('Perfect', '5')]
 
         def chatbot(choice_selected, message):
-            return self.ask(choice_selected, message, similarity_search_k=similarity_search_k)
+            return self.ask_with_prompt(choice_selected, message, similarity_search_k=similarity_search_k,
+                                        api_prompt_template=api_prompt_template,
+                                        doc_prompt_template=doc_prompt_template,
+                                        code_prompt_template=code_prompt_template)
 
         msg = gr.Textbox(label="User Question")
         submit = gr.Button("Submit")
@@ -179,13 +185,13 @@ class IWXBot:
 
         if record_feedback:
             interface = gr.Interface(fn=chatbot, inputs=[choice, msg], outputs=[output_textbox, output_textbox1],
-                                 theme="gradio/monochrome",
-                                 title="IWX CHATBOT", allow_flagging="manual", flagging_callback=MysqlLogger(),
-                                 flagging_options=data)
+                                     theme="gradio/monochrome",
+                                     title="IWX CHATBOT", allow_flagging="manual", flagging_callback=MysqlLogger(),
+                                     flagging_options=data)
         else:
             interface = gr.Interface(fn=chatbot, inputs=[choice, msg], outputs=[output_textbox, output_textbox1],
-                                 theme="gradio/monochrome",
-                                 title="IWX CHATBOT", allow_flagging="never")
+                                     theme="gradio/monochrome",
+                                     title="IWX CHATBOT", allow_flagging="never")
         if use_queue:
             interface.queue().launch(debug=debug, share=share_ui)
         else:
