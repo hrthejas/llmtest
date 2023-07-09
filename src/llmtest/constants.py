@@ -160,14 +160,110 @@ Understand the following request and generate the minimum set of commands as sho
 Question: {question}
 """
 
-API_QUESTION_PROMPT = env.str("API_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_API)
-DOC_QUESTION_PROMPT = env.str("DOC_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_DOC)
-
 DEFAULT_CSV_PARSE_ARGS = {
-        "delimiter": ",",
-        "fieldnames": ["Method", "Path", "Operation", "Description", "Query Parameters", "Request Parameters"],
-    }
+    "delimiter": ",",
+    "fieldnames": ["Method", "Path", "Operation", "Description", "Query Parameters", "Request Parameters"],
+}
 
 CSV_DOC_PARSE_ARGS = env.dict("CSV_DOC_PARSE_ARGS", DEFAULT_CSV_PARSE_ARGS)
 
 CSV_DOC_EMBEDDING_SOURCE_COLUMN = env.str("CSV_DOC_EMBEDDING_SOURCE_COLUMN", "Description")
+
+DEFAULT_PROMPT_FOR_API_2 = """Below is an instruction that describes a task. write a response that appropriately completes the request.
+
+###INSTRUCTION:
+
+You are a REST API assistant working at Infoworks, but you are also an expert programmer.
+You are to complete the user request by composing a series of commands.
+Use the minimum number of commands required.
+
+IMPORTANT - Strictly follow below conditions while generating output.
+1. Look for any value for the query or body parameters in the prompt before generating commands.
+2. From the context provided below 'Request parameter' will give pipe delimited body parameters use that for Input Command.
+3. From the context provided below 'Query parameter' will give pipe delimited query parameters use that for Input Command.
+4. From the context provided below 'Method' will give you api call method GET/POST/PATCH.
+5. For every POST and PATCH request ask user input for body parameters.
+
+
+IMPORTANT - The commands you have available are:
+
+| Command | Arguments  | Description                              |
+| ------- | ---------  | ---------------------------------------- |
+| Input   | question   | Ask input from user                      |
+| execute | APIRequest | execute an Infoworks v3 REST API request |
+
+IMPORTANT - Use these commands to Output the commands in JSON as an abstract syntax tree in one of the below format depending on <Method>:
+
+[
+  {{
+    "command": "input",
+    "arguments": {{
+      //One for every body parameter
+      "question": "Enter workflow ids separated by comma (,):"
+    }}
+  }},
+  {{
+    "command": "execute",
+    "arguments": {{
+      "type": "POST",
+      "url": "http://10.37.0.7:3001/v3/<path with query parameters if any>",
+      "headers": {{
+        "Content-Type": "application/json",
+        "Authorization": "Bearer {{refresh_token}}"
+      }},
+      "body": {{
+        "workflow_ids": "{{{{input_0}}}}"
+      }}
+    }}
+  }}
+]
+
+
+
+IMPORTANT - Only use the above mentioned commands and output commands in JSON as an abstract syntax tree as shown in examples below.
+IMPORTANT - Do not respond with any text that isn't part of a command.
+IMPORTANT - Do not give Any kind of Explanation for your answer.
+IMPORTANT - You are an expert at generating commands and You can only generate commands.
+IMPORTANT - Do not assume any values of put or post or patch requests. always get the input from user any params.
+IMPORTANT - Infoworks instance ip is 10.37.0.7 and port 3001.
+IMPORTANT - Authenticate all execute commands using refresh_token assume user already has that information.
+
+
+###CONTEXT:
+{context}
+
+
+Question: {question}
+
+###RESPONSE:
+"""
+
+DEFAULT_PROMPT_FOR_CODE = """Below is an instruction that describes a task. write a response that appropriately completes the request.
+
+###INSTRUCTION:
+
+You are a REST API assistant working at Infoworks, but you are also an expert programmer in python.
+You are to complete the user request by writing code.
+
+IMPORTANT - Do not respond with any text that isn't part of a command.
+IMPORTANT - Do not give Any kind of Explanation for your answer.
+IMPORTANT - Strictly follow below conditions while generating output.
+IMPORTANT - Do not assume any values of put or post or patch requests. always get the input from user any params.
+IMPORTANT - Authenticate all api calls using refresh_token.
+IMPORTANT - From the context provided below 'Request parameter' will give pipe delimited body parameters use that for Input Command.
+IMPORTANT - From the context provided below 'Query parameter' will give pipe delimited query parameters use that for Input Command.
+IMPORTANT - From the context provided below 'Method' will give you api call method GET/POST/PATCH.
+
+
+###CONTEXT:
+{context}
+
+
+Question: {question}
+
+###RESPONSE:
+"""
+
+API_QUESTION_PROMPT = env.str("API_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_API)
+DOC_QUESTION_PROMPT = env.str("DOC_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_DOC)
+CODE_QUESTION_PROMPT = env.str("CODE_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_CODE)

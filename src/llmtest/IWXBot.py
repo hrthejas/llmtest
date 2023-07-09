@@ -12,6 +12,7 @@ class IWXBot:
     api_vector_stores = []
     api_prompt = None
     doc_prompt = None
+    code_prompt = None
     llm_model = None
     vector_embeddings = None
 
@@ -19,7 +20,7 @@ class IWXBot:
                 "max_new_tokens", "use_4bit_quantization", "set_device_map", "mount_gdrive", "gdrive_mount_base_bath",
                 "device_map", "use_simple_llm_loader", "embedding_class", "model_name", "is_gptq_model",
                 "custom_quantization_config", "use_safetensors", "use_triton", "set_torch_dtype", "torch_dtype",
-                "api_prompt_template", "doc_prompt_template"]
+                "api_prompt_template", "doc_prompt_template", "code_prompt_template"]
 
     model_id = constants.DEFAULT_MODEL_NAME
     docs_base_path = constants.DOCS_BASE_PATH
@@ -43,6 +44,7 @@ class IWXBot:
     torch_dtype = torch.bfloat16
     api_prompt_template = constants.API_QUESTION_PROMPT
     doc_prompt_template = constants.DOC_QUESTION_PROMPT
+    code_prompt_template = constants.DEFAULT_PROMPT_FOR_CODE
 
     def __getitem__(self, item):
         return item
@@ -77,6 +79,9 @@ class IWXBot:
         self.doc_prompt = PromptTemplate(template=self.doc_prompt_template,
                                          input_variables=["context", "question"])
 
+        self.code_prompt = PromptTemplate(template=self.code_prompt_template,
+                                          input_variables=["context", "question"])
+
         self.llm_model = llmloader.load_llm(self.model_id, use_4bit_quantization=self.use_4bit_quantization,
                                             set_device_map=self.set_device_map,
                                             max_new_tokens=self.max_new_tokens, device_map=self.device_map,
@@ -89,25 +94,30 @@ class IWXBot:
         pass
 
     def ask(self, answer_type, query, similarity_search_k=4, api_prompt=None,
-            doc_prompt=None):
+            doc_prompt=None, code_prompt=None):
 
         if api_prompt is None:
             api_prompt = self.api_prompt
         if doc_prompt is None:
             doc_prompt = self.doc_prompt
+        if code_prompt is None:
+            code_prompt = self.code_prompt
 
         reference_docs = ""
         if self.llm_model is not None:
             search_results = None
             local_qa_chain = None
-            if answer_type == "API":
+            if answer_type == "API" or answer_type == "CODE":
                 for api_vector_store in self.api_vector_stores:
                     if search_results is None:
                         search_results = api_vector_store.similarity_search(query, k=similarity_search_k)
                     else:
                         search_results = search_results + api_vector_store.similarity_search(query,
                                                                                              k=similarity_search_k)
-                local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=api_prompt)
+                if answer_type == "API":
+                    local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=api_prompt)
+                else:
+                    local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=code_prompt)
             else:
                 for doc_vector_store in self.doc_vector_stores:
                     if search_results is None:
@@ -129,10 +139,15 @@ class IWXBot:
 
     def ask_with_prompt(self, answer_type, query, similarity_search_k=4,
                         api_prompt_template=constants.API_QUESTION_PROMPT,
-                        doc_prompt_template=constants.DOC_QUESTION_PROMPT):
+                        doc_prompt_template=constants.DOC_QUESTION_PROMPT,
+                        code_prompt_template=constants.DEFAULT_PROMPT_FOR_CODE):
         api_prompt = PromptTemplate(template=api_prompt_template,
                                     input_variables=["context", "question"])
 
         doc_prompt = PromptTemplate(template=doc_prompt_template,
                                     input_variables=["context", "question"])
-        return self.ask(answer_type, query, similarity_search_k, api_prompt, doc_prompt)
+
+        code_prompt = PromptTemplate(template=code_prompt_template,
+                                     input_variables=["context", "question"])
+
+        return self.ask(answer_type, query, similarity_search_k, api_prompt, doc_prompt, code_prompt)
