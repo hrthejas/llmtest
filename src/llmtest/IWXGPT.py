@@ -3,6 +3,7 @@ import gradio as gr
 from getpass import getpass
 from llmtest import constants, vectorstore, ingest, embeddings, indextype
 from langchain.chains.question_answering import load_qa_chain
+from langchain.chains.summarize import load_summarize_chain
 from langchain.prompts import PromptTemplate
 from langchain.chat_models import ChatOpenAI
 
@@ -123,7 +124,7 @@ class IWXGPT:
                 else:
                     local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=code_prompt)
             elif answer_type == "Summary":
-                search_results = []
+                search_results = ingest.get_doc_from_text(query)
                 local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=summary_prompt)
             else:
                 for doc_vector_store in self.doc_vector_stores:

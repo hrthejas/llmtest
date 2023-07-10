@@ -81,3 +81,12 @@ def getMarkDownDocs(md_docs_path, chunk_size=1000, chunk_overlap=100):
                                                                     chunk_overlap=chunk_overlap)
     md_text = md_text_splitter.split_documents(md_docs)
     return md_text
+
+
+def get_doc_from_text(source_text, max_pages=3, chunk_size=2000, chunk_overlap=0, model_name="gpt-3.5-turbo",
+                      encoding_name="cl100k_base"):
+    from langchain.docstore.document import Document
+    text_splitter = CharacterTextSplitter.from_tiktoken_encoder(encoding_name=encoding_name, model_name=model_name,
+                                                                chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    texts = text_splitter.split_text(source_text)
+    return [Document(page_content=t) for t in texts[:max_pages]]
