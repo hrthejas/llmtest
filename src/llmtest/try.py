@@ -4,9 +4,8 @@ from llmtest import constants
 from llmtest.IWXGPT import IWXGPT
 
 args = {
-    "mount_gdrive": False,
     "index_base_path": "/Users/thejas/Downloads/chatbot/indexes/openai/",
-    "max_new_tokens": 800,
+    "max_new_tokens": 800
 }
 
 chatbot = IWXGPT(**args)

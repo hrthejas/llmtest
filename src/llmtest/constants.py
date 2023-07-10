@@ -264,6 +264,17 @@ Question: {question}
 ###RESPONSE:
 """
 
+
+DEFAULT_PROMPT_FOR_SUMMARY = """Below is an instruction that describes a task. write a response that appropriately completes the request.
+
+###INSTRUCTION:
+Below is the response we got from api call made to infoworks restapi, generate a concise sumamry of the same 
+{question}
+
+###RESPONSE:
+"""
+
+
 API_QUESTION_PROMPT = env.str("API_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_API)
 DOC_QUESTION_PROMPT = env.str("DOC_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_DOC)
 CODE_QUESTION_PROMPT = env.str("CODE_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_CODE)
