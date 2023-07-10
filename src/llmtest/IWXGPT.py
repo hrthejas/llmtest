@@ -89,7 +89,7 @@ class IWXGPT:
                                           input_variables=["context", "question"])
 
         self.summary_prompt = PromptTemplate(template=self.summary_prompt_template,
-                                             input_variables=["question"])
+                                             input_variables=["context", "question"])
 
         print("Loaded all prompts")
         print("Init complete")
@@ -163,7 +163,7 @@ class IWXGPT:
                                      input_variables=["context", "question"])
 
         summary_prompt = PromptTemplate(template=summary_prompt_template,
-                                        input_variables=["question"])
+                                        input_variables=["context", "question"])
 
         return self.ask(answer_type, query, similarity_search_k, api_prompt, doc_prompt, code_prompt, summary_prompt)
 
