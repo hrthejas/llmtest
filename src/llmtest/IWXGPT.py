@@ -125,6 +125,9 @@ class IWXGPT:
                     local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=code_prompt)
             elif answer_type == "Summary":
                 search_results = ingest.get_doc_from_text(query)
+                chain = load_summarize_chain(self.llm_model, chain_type="map_reduce")
+                summary = chain.run(search_results)
+                print(summary)
                 local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=summary_prompt)
             else:
                 for doc_vector_store in self.doc_vector_stores:
