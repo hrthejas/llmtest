@@ -16,6 +16,7 @@ class IWXBot:
     api_prompt = None
     doc_prompt = None
     code_prompt = None
+    summary_prompt = None
     llm_model = None
     vector_embeddings = None
 
@@ -48,6 +49,7 @@ class IWXBot:
     api_prompt_template = constants.API_QUESTION_PROMPT
     doc_prompt_template = constants.DOC_QUESTION_PROMPT
     code_prompt_template = constants.DEFAULT_PROMPT_FOR_CODE
+    summary_prompt_template = constants.DEFAULT_PROMPT_FOR_SUMMARY
 
     def __getitem__(self, item):
         return item
@@ -62,6 +64,10 @@ class IWXBot:
 
         if self.mount_gdrive:
             ingest.mountGoogleDrive(self.gdrive_mount_base_bath)
+
+        pass
+
+    def initialize_llm(self):
 
         self.vector_embeddings = embeddings.get_embeddings(self.embedding_class, self.model_name)
 
@@ -86,6 +92,9 @@ class IWXBot:
         self.code_prompt = PromptTemplate(template=self.code_prompt_template,
                                           input_variables=["context", "question"])
 
+        self.summary_prompt = PromptTemplate(template=self.summary_prompt_template,
+                                             input_variables=["context", "question"])
+
         self.llm_model = llmloader.load_llm(self.model_id, use_4bit_quantization=self.use_4bit_quantization,
                                             set_device_map=self.set_device_map,
                                             max_new_tokens=self.max_new_tokens, device_map=self.device_map,
@@ -95,10 +104,12 @@ class IWXBot:
                                             use_triton=self.use_triton,
                                             use_safetensors=self.use_safetensors, set_torch_dtype=self.set_torch_dtype,
                                             torch_dtype=self.torch_dtype)
+        print("Loaded all prompts")
+        print("Init complete")
         pass
 
     def ask(self, answer_type, query, similarity_search_k=4, api_prompt=None,
-            doc_prompt=None, code_prompt=None):
+            doc_prompt=None, code_prompt=None, summary_prompt=None):
 
         if api_prompt is None:
             api_prompt = self.api_prompt
@@ -106,6 +117,8 @@ class IWXBot:
             doc_prompt = self.doc_prompt
         if code_prompt is None:
             code_prompt = self.code_prompt
+        if summary_prompt is None:
+            summary_prompt = self.summary_prompt
 
         reference_docs = ""
         if self.llm_model is not None:
@@ -122,6 +135,9 @@ class IWXBot:
                     local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=api_prompt)
                 else:
                     local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=code_prompt)
+            elif answer_type == "Summary":
+                search_results = ingest.get_doc_from_text(query)
+                local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=summary_prompt)
             else:
                 for doc_vector_store in self.doc_vector_stores:
                     if search_results is None:
@@ -147,7 +163,8 @@ class IWXBot:
     def ask_with_prompt(self, answer_type, query, similarity_search_k=4,
                         api_prompt_template=api_prompt_template,
                         doc_prompt_template=doc_prompt_template,
-                        code_prompt_template=code_prompt_template):
+                        code_prompt_template=code_prompt_template,
+                        summary_prompt_template=summary_prompt_template):
 
         api_prompt = PromptTemplate(template=api_prompt_template,
                                     input_variables=["context", "question"])
@@ -158,20 +175,29 @@ class IWXBot:
         code_prompt = PromptTemplate(template=code_prompt_template,
                                      input_variables=["context", "question"])
 
-        return self.ask(answer_type, query, similarity_search_k, api_prompt, doc_prompt, code_prompt)
+        summary_prompt = PromptTemplate(template=summary_prompt_template,
+                                        input_variables=["context", "question"])
+
+        return self.ask(answer_type, query, similarity_search_k, api_prompt, doc_prompt, code_prompt, summary_prompt)
 
     def start_chat(self, debug=True, use_queue=False, share_ui=True, similarity_search_k=1, record_feedback=True,
                    api_prompt_template=constants.API_QUESTION_PROMPT,
                    doc_prompt_template=constants.DOC_QUESTION_PROMPT,
-                   code_prompt_template=constants.DEFAULT_PROMPT_FOR_CODE):
-        choices = ['API', 'Docs', 'Code']
+                   code_prompt_template=constants.DEFAULT_PROMPT_FOR_CODE,
+                   summary_prompt_template=constants.DEFAULT_PROMPT_FOR_SUMMARY,
+                   add_summary_answer_type=False):
+        if add_summary_answer_type:
+            choices = ['API', 'Docs', 'Code', 'Summary']
+        else:
+            choices = ['API', 'Docs', 'Code']
         data = [('Bad', '1'), ('Ok', '2'), ('Good', '3'), ('Very Good', '4'), ('Perfect', '5')]
 
         def chatbot(choice_selected, message):
             return self.ask_with_prompt(choice_selected, message, similarity_search_k=similarity_search_k,
                                         api_prompt_template=api_prompt_template,
                                         doc_prompt_template=doc_prompt_template,
-                                        code_prompt_template=code_prompt_template)
+                                        code_prompt_template=code_prompt_template,
+                                        summary_prompt_template=summary_prompt_template)
 
         msg = gr.Textbox(label="User Question")
         submit = gr.Button("Submit")

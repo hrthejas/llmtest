@@ -22,7 +22,7 @@ class IWXGPT:
 
     app_args = ["model_name", "temperature", "index_base_path", "docs_index_name_prefix", "api_index_name_prefix",
                 "max_new_tokens", "mount_gdrive", "gdrive_mount_base_bath", "embedding_model_name",
-                "api_prompt_template", "doc_prompt_template", "code_prompt_template"]
+                "api_prompt_template", "doc_prompt_template", "code_prompt_template", "summary_prompt_template"]
 
     model_name = constants.OPEN_AI_MODEL_NAME
     temperature = constants.OPEN_AI_TEMP
@@ -172,8 +172,13 @@ class IWXGPT:
                    api_prompt_template=constants.API_QUESTION_PROMPT,
                    doc_prompt_template=constants.DOC_QUESTION_PROMPT,
                    code_prompt_template=constants.DEFAULT_PROMPT_FOR_CODE,
-                   summary_prompt_template=constants.DEFAULT_PROMPT_FOR_SUMMARY):
-        choices = ['API', 'Docs', 'Code', 'Summary']
+                   summary_prompt_template=constants.DEFAULT_PROMPT_FOR_SUMMARY,
+                   add_summary_answer_type=False):
+
+        if add_summary_answer_type:
+            choices = ['API', 'Docs', 'Code', 'Summary']
+        else:
+            choices = ['API', 'Docs', 'Code']
         data = [('Bad', '1'), ('Ok', '2'), ('Good', '3'), ('Very Good', '4'), ('Perfect', '5')]
 
         def chatbot(choice_selected, message):
