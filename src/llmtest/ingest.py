@@ -21,22 +21,43 @@ def mountGoogleDrive(mount_location="/content/drive"):
     drive.mount(mount_location)
 
 
-def get_csv_docs(csv_api_docs_path, chunk_size=1000, chunk_overlap=100):
-    loader_kwargs = {'csv_args': constants.CSV_DOC_PARSE_ARGS,
-                     "source_column": constants.CSV_DOC_EMBEDDING_SOURCE_COLUMN}
+def get_csv_docs(csv_api_docs_path, chunk_size=1000, chunk_overlap=100, loader_kwargs=None):
+    if loader_kwargs is None:
+        loader_kwargs = {'csv_args': constants.CSV_DOC_PARSE_ARGS,
+                         "source_column": constants.CSV_DOC_EMBEDDING_SOURCE_COLUMN}
 
     loader = DirectoryLoader(csv_api_docs_path, recursive=True, glob="**/*.csv", loader_cls=CSVLoader,
                              loader_kwargs=loader_kwargs)
 
     csv_docs = loader.load()
-    csv_docs_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size,chunk_overlap=chunk_overlap)
+    csv_docs_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     csv_text = csv_docs_splitter.split_documents(csv_docs)
     return csv_text
 
 
-def get_json_docs(json_api_docs_path, chunk_size=1000, chunk_overlap=100):
+def get_csv_docs_tiktoken(csv_api_docs_path, chunk_size=1000, chunk_overlap=100, loader_kwargs=None,
+                          model_name="gpt-3.5-turbo", encoding_name="cl100k_base"):
+    if loader_kwargs is None:
+        loader_kwargs = {'csv_args': constants.CSV_DOC_PARSE_ARGS,
+                         "source_column": constants.CSV_DOC_EMBEDDING_SOURCE_COLUMN}
+
+    loader = DirectoryLoader(csv_api_docs_path, recursive=True, glob="**/*.csv", loader_cls=CSVLoader,
+                             loader_kwargs=loader_kwargs)
+
+    csv_docs = loader.load()
+    csv_docs_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=chunk_size,
+                                                                             chunk_overlap=chunk_overlap,
+                                                                             encoding_name=encoding_name,
+                                                                             model_name=model_name)
+    csv_text = csv_docs_splitter.split_documents(csv_docs)
+    return csv_text
+
+
+def get_json_docs(json_api_docs_path, chunk_size=1000, chunk_overlap=100, loader_kwargs=None):
+    if loader_kwargs is None:
+        loader_kwargs = {'jq_schema': '.', 'text_content': False}
     loader = DirectoryLoader(json_api_docs_path, recursive=True, glob="**/*.json", show_progress=True,
-                             loader_cls=JSONLoader, loader_kwargs={'jq_schema': '.', 'text_content': False})
+                             loader_cls=JSONLoader, loader_kwargs=loader_kwargs)
     json_docs = loader.load()
     json_text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=chunk_size,
                                                                               chunk_overlap=chunk_overlap)

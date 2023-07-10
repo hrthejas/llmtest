@@ -15,7 +15,7 @@ def get_retriever_from_store(store, search_type="similarity", search_kwargs={"k"
 def faiss_db(embeddings, docs_content, index_base_path, index_name_prefix, is_overwrite=False):
     faiss_vector_store_path = index_base_path + "/faiss/" + index_name_prefix + "/"
     vector_store = None
-    if is_overwrite == True and len(docs_content) > 0:
+    if is_overwrite and len(docs_content) > 0:
         vector_store = FAISS.from_documents(docs_content, embeddings)
         vector_store.save_local(folder_path=faiss_vector_store_path, index_name=index_name_prefix)
     else:
@@ -79,4 +79,19 @@ def get_vector_store(docs_base_path, index_base_path, index_name_prefix,
         vector_store = chroma_db(embeddings, all_docs, index_base_path, index_name_prefix, is_overwrite=False)
     elif index_type == indextype.IndexType.ELASTIC_SEARCH_INDEX:
         vector_store = elastic_db(embeddings, all_docs, index_base_path, index_name_prefix, is_overwrite=False)
+    return vector_store
+
+
+def get_vector_store_from_docs(docs_content, index_base_path, index_name_prefix,
+                               embeddings,
+                               index_type=indextype.IndexType.FAISS_INDEX, is_overwrite=False):
+    vector_store = None
+    if index_type == indextype.IndexType.FAISS_INDEX:
+        vector_store = faiss_db(embeddings, docs_content, index_base_path, index_name_prefix, is_overwrite=is_overwrite)
+    elif index_type == indextype.IndexType.CHROMA_INDEX:
+        vector_store = chroma_db(embeddings, docs_content, index_base_path, index_name_prefix,
+                                 is_overwrite=is_overwrite)
+    elif index_type == indextype.IndexType.ELASTIC_SEARCH_INDEX:
+        vector_store = elastic_db(embeddings, docs_content, index_base_path, index_name_prefix,
+                                  is_overwrite=is_overwrite)
     return vector_store
