@@ -57,6 +57,7 @@ class IWXBot:
             valid_kwargs = {name: kwargs.pop(name) for name in self.app_args if name in kwargs}
             for key, value in valid_kwargs.items():
                 if hasattr(self, key):
+                    print("Setting attribute " + key)
                     setattr(self, key, value)
 
         if self.mount_gdrive:
@@ -186,12 +187,12 @@ class IWXBot:
 
         if record_feedback:
             interface = gr.Interface(fn=chatbot, inputs=[choice, msg], outputs=[output_textbox, output_textbox1],
-                                     theme="gradio/monochrome",
+                                     theme="darkhuggingface",
                                      title="IWX CHATBOT", allow_flagging="manual", flagging_callback=MysqlLogger(),
                                      flagging_options=data)
         else:
             interface = gr.Interface(fn=chatbot, inputs=[choice, msg], outputs=[output_textbox, output_textbox1],
-                                     theme="gradio/monochrome",
+                                     theme="darkhuggingface",
                                      title="IWX CHATBOT", allow_flagging="never")
         if use_queue:
             interface.queue().launch(debug=debug, share=share_ui)
