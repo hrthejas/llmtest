@@ -134,11 +134,7 @@ class IWXGPT:
                 local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=doc_prompt)
 
             if local_qa_chain is not None and search_results is not None:
-                if answer_type == "Summary":
-                    result = local_qa_chain({"question": query})
-                else:
-                    result = local_qa_chain({"input_documents": search_results, "question": query})
-
+                result = local_qa_chain({"input_documents": search_results, "question": query})
                 bot_message = result["output_text"]
                 for doc in search_results:
                     reference_docs = reference_docs + '\n' + str(doc.metadata.get('source'))

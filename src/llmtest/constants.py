@@ -195,12 +195,10 @@ IMPORTANT - The commands you have available are:
 IMPORTANT - Use these commands to Output the commands in JSON as an abstract syntax tree in one of the below format depending on <Method>:
 
 [
+  //Ask this for every parameter
   {{
     "command": "input",
-    "arguments": {{
-      //One for every body parameter
-      "question": "Enter workflow ids separated by comma (,):"
-    }}
+    "arguments": "Enter workflow ids separated by comma (,):"
   }},
   {{
     "command": "execute",
