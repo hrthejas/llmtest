@@ -288,9 +288,8 @@ Question: {question}
 
 DEFAULT_PROMPT_FOR_SUMMARY = """Below is an instruction that describes a task. write a response that appropriately completes the request.
 
-
-Below is the response we got from api call made to infoworks restapi, generate co a summary of the same.
 {context}
+Below is the response we got from api call made to infoworks restapi, generate a summary of the same.
 {question}
 
 
