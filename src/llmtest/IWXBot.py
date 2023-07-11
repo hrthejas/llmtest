@@ -67,7 +67,7 @@ class IWXBot:
 
         pass
 
-    def initialize_llm(self):
+    def initialize_chat(self):
 
         self.vector_embeddings = embeddings.get_embeddings(self.embedding_class, self.model_name)
 

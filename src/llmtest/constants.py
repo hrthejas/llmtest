@@ -18,7 +18,7 @@ GDRIVE_MOUNT_BASE_PATH = env.str("GDRIVE_MOUNT_BASE_PATH", "/content/drive")
 
 OPEN_AI_TEMP = env.int("OPEN_AI_TEMP", 0)
 
-OPEN_AI_MODEL_NAME = env.str("OPEN_AI_MODEL_NAME", "gpt-3.5-turbo")
+OPEN_AI_MODEL_NAME = env.str("OPEN_AI_MODEL_NAME", "gpt-3.5-turbo-16k")
 
 USER_NAME = env.str("USER_NAME", "user@infoworks.io")
 
