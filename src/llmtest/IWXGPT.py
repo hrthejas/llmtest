@@ -42,7 +42,6 @@ class IWXGPT:
         return item
 
     def __init__(self, **kwargs):
-        super().__init__()
         if len(kwargs) > 0:
             valid_kwargs = {name: kwargs.pop(name) for name in self.app_args if name in kwargs}
             for key, value in valid_kwargs.items():
