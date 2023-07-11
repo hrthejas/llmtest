@@ -123,6 +123,7 @@ class IWXGPT:
                     local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=code_prompt)
             elif answer_type == "Summary":
                 search_results = ingest.get_doc_from_text(query)
+                query = "Below is the response we got from api call made to infoworks restapi, generate summary for the same"
                 local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=summary_prompt)
             else:
                 for doc_vector_store in self.doc_vector_stores:

@@ -226,7 +226,7 @@ IMPORTANT - Use these commands to Output the commands in JSON as an abstract syn
     "command": "execute",
     "arguments": {{
       "type": "PUT",
-      "url": "http://10.37.0.7:3001/v3/sources/{{{{input_0}}}}/tables/{{{{input_1}}}}/metadata",
+      "url": "http://10.37.0.7:3001/v3/<path>",
       "headers": {{
         "Content-Type": "application/json",
         "Authorization": "Bearer {{refresh_token}}"
@@ -288,13 +288,17 @@ Question: {question}
 
 DEFAULT_PROMPT_FOR_SUMMARY = """Below is an instruction that describes a task. write a response that appropriately completes the request.
 
-###INSTRUCTION:
-Below is the response we got from api call made to infoworks restapi, generate a concise summary of the same 
+
+Below is the response we got from api call made to infoworks restapi, generate co a summary of the same.
+{context}
 {question}
 
-{context}
 
-###RESPONSE:
+"""
+
+DEFAULT_PROMPT_FOR_SUMMARY_NEW = """Below is an instruction that describes a task. write a response that appropriately completes the request.
+{question}
+{context}
 """
 
 API_QUESTION_PROMPT = env.str("API_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_API)
