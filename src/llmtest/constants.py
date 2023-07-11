@@ -31,135 +31,15 @@ MYSQL_USER = env.str("MYSQL_USER", "infoworks")
 MYSQL_PASSWD = env.str("MYSQL_PASSWD", "IN11**rk")
 MYSQL_DB = env.str("MYSQL_DB", "generative_ai")
 
-DEFAULT_PROMPT_FOR_DOC = """
+DEFAULT_PROMPT_FOR_DOC = """Below is context and instruction use the context and write a response that appropriately completes the request.
 
-Use the below context and embeddings to answer the user questions
-
-CONTEXT: 
+###CONTEXT: 
 {context}
 =========
 
-QUESTION: {question} 
+###INSTRUCTION:
+{question} 
 
-"""
-
-DEFAULT_PROMPT_FOR_API_2 = """Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
-
-You are a REST API assistant working at Infoworks, but you are also an expert programmer.
-You are to complete the user request by composing a series of commands.
-Use the minimum number of commands required.
-
-The commands you have available are:
-| Command | Arguments | Description | Output Format |
-| --- | --- | --- | --- |
-| message | message | Send the user a message | null |
-| input | question | Ask the user for an input | null |
-| execute | APIRequest | execute an Infoworks v3 REST API request | null |
-
-always use the above mentioned commands and output json as shown in examples below, dont add anything extra to the answer.
-
-Example 1:
-[
-  {{
-    "command": "execute",
-    "arguments": {{
-      "type": "GET",
-      "url": "http://10.37.0.7:3001/v3/sources",
-      "headers": {{
-        "Content-Type": "application/json",
-        "Authorization": "Bearer {{refresh_token}}"
-      }},
-      "body": ""
-    }}
-  }}
-]
-
-Example 2:
-Request: List all teradata sources
-Response:
-[
-  {{
-    "command": "execute",
-    "arguments": {{
-      "type": "GET",
-      "url": "http://10.37.0.7:3001/v3/sources",
-      "headers": {{
-        "Content-Type": "application/json",
-        "Authorization": "Bearer {{refresh_token}}"
-      }},
-      "body": ""
-    }}
-  }}
-]
-
-Example 3:
-User Request: create a teradata source with source name \"Teradata_sales\"
-Response:
-[
-  {{
-    "command": "input",
-    "arguments" : "Enter the source name"
-  }},
-  {{
-    "command": "input",
-    "arguments" : "Enter the source type"
-  }},
-  {{
-    "command": "input",
-    "arguments" : "Enter the source sub type"
-  }},
-  {{
-    "command": "input",
-    "arguments" : "Enter the data lake path"
-  }},
-  {{
-    "command": "input",
-    "arguments" : "Enter the environment id"
-  }},
-  {{
-    "command": "input",
-    "arguments" : "Enter the storage id"
-  }},
-  {{
-    "command": "input",
-    "arguments" : "Enter the data lake schema"
-  }},
-  {{
-    "command": "input",
-    "arguments" : "Enter the is_oem_connector"
-  }},
-  {{
-    "command": "execute",
-    "arguments": {{
-      "type": "POST"
-      "url": "http://10.37.0.7:3001/api/v3/sources",
-      "headers": "{{\"Content-Type\": \"application/json\", \"Authorization\": \"Bearer {{refresh_token}}\"}}",
-      "body": {{
-        "name": "{{{{input_0}}}}",
-        "environment_id": "{{{{input_4}}}}",
-        "storage_id": "{{{{input_5}}",
-        "data_lake_schema": "{{{{input_6}}}}"
-        "data_lake_path": "{{{{input_3}}}}",
-        "type": "{{{{input_1}}}}",
-        "sub_type": "{{{{input_2}}}}",
-        "is_oem_connector": "{{{{input_7}}}}"
-      }}
-    }}
-  }}
-]
-
-{context}
-
-IMPORTANT - Output the commands in JSON as an abstract syntax tree. Do not respond with any text that isn't part of a command.
-IMPORTANT - Do not explain yourself or Do not give Any Explanation
-IMPORTANT - You are an expert at generating commands and You can only generate commands.
-IMPORTANT - Do not assume any values of put or post or patch requests. always get the input from user any params.
-IMPORTANT - Infoworks instance ip is 10.37.0.7 and port 3001
-IMPORTANT - Authenticate all execute commands using refresh_token assume user already has that information
-
-Understand the following request and generate the minimum set of commands as shown in examples above to complete it.
-
-Question: {question}
 """
 
 DEFAULT_CSV_PARSE_ARGS = {

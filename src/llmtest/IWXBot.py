@@ -109,7 +109,7 @@ class IWXBot:
         pass
 
     def ask(self, answer_type, query, similarity_search_k=4, api_prompt=None,
-            doc_prompt=None, code_prompt=None, summary_prompt=None):
+            doc_prompt=None, code_prompt=None, summary_prompt=None,summary_query="Summarise the json"):
 
         if api_prompt is None:
             api_prompt = self.api_prompt
@@ -137,6 +137,7 @@ class IWXBot:
                     local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=code_prompt)
             elif answer_type == "Summary":
                 search_results = ingest.get_doc_from_text(query)
+                query = summary_query
                 local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=summary_prompt)
             else:
                 for doc_vector_store in self.doc_vector_stores:
