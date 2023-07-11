@@ -109,7 +109,7 @@ class IWXBot:
         pass
 
     def ask(self, answer_type, query, similarity_search_k=4, api_prompt=None,
-            doc_prompt=None, code_prompt=None, summary_prompt=None,summary_query="Summarise the json"):
+            doc_prompt=None, code_prompt=None, summary_prompt=None, summary_query="Summarise the json"):
 
         if api_prompt is None:
             api_prompt = self.api_prompt
@@ -165,7 +165,7 @@ class IWXBot:
                         api_prompt_template=api_prompt_template,
                         doc_prompt_template=doc_prompt_template,
                         code_prompt_template=code_prompt_template,
-                        summary_prompt_template=summary_prompt_template):
+                        summary_prompt_template=summary_prompt_template, summary_query="Summarise the json"):
 
         api_prompt = PromptTemplate(template=api_prompt_template,
                                     input_variables=["context", "question"])
@@ -179,7 +179,8 @@ class IWXBot:
         summary_prompt = PromptTemplate(template=summary_prompt_template,
                                         input_variables=["context", "question"])
 
-        return self.ask(answer_type, query, similarity_search_k, api_prompt, doc_prompt, code_prompt, summary_prompt)
+        return self.ask(answer_type, query, similarity_search_k, api_prompt, doc_prompt, code_prompt, summary_prompt,
+                        summary_query=summary_query)
 
     def start_chat(self, debug=True, use_queue=False, share_ui=True, similarity_search_k=1, record_feedback=True,
                    api_prompt_template=constants.API_QUESTION_PROMPT,
