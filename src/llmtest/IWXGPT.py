@@ -3,7 +3,6 @@ import gradio as gr
 from getpass import getpass
 from llmtest import constants, vectorstore, ingest, embeddings, indextype
 from langchain.chains.question_answering import load_qa_chain
-from langchain.chains.summarize import load_summarize_chain
 from langchain.prompts import PromptTemplate
 from langchain.chat_models import ChatOpenAI
 
@@ -43,7 +42,6 @@ class IWXGPT:
         return item
 
     def __init__(self, **kwargs):
-
         if len(kwargs) > 0:
             valid_kwargs = {name: kwargs.pop(name) for name in self.app_args if name in kwargs}
             for key, value in valid_kwargs.items():

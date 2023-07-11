@@ -37,6 +37,7 @@ setup(
     entry_points={},
     python_requires=">=3.7.0",
     install_requires=[
+        "pydantic==1.10.9"
         "environs",
         "bitsandbytes",
         "peft",

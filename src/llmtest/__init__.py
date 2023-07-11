@@ -2,6 +2,7 @@ import torch
 import os
 from transformers import BitsAndBytesConfig
 from enum import Enum
+
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
@@ -20,12 +21,14 @@ from langchain.embeddings import (
     HuggingFaceEmbeddings,
     HuggingFaceInstructEmbeddings
 )
+
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.vectorstores import (
     Chroma,
     FAISS,
     ElasticVectorSearch
 )
+
 from langchain.text_splitter import (
     CharacterTextSplitter,
     RecursiveCharacterTextSplitter,
