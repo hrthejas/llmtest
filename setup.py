@@ -46,7 +46,7 @@ setup(
         "transformers",
         "xformers",
         "torch",
-        "langchain",
+        "langchain==0.0.218",
         "chromadb",
         "sentence_transformers",
         "tiktoken",
