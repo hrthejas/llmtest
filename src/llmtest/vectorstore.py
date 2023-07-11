@@ -12,11 +12,16 @@ def get_retriever_from_store(store, search_type="similarity", search_kwargs={"k"
     return store.as_retriever(search_type=search_type, search_kwargs=search_kwargs)
 
 
-def faiss_db(embeddings, docs_content, index_base_path, index_name_prefix, is_overwrite=False):
+def faiss_db(embeddings, docs_content, index_base_path, index_name_prefix, is_overwrite=False,split_docs=True):
     faiss_vector_store_path = index_base_path + "/faiss/" + index_name_prefix + "/"
     vector_store = None
-    if is_overwrite == True and len(docs_content) > 0:
-        vector_store = FAISS.from_documents(docs_content, embeddings)
+    if is_overwrite and len(docs_content) > 0:
+        if split_docs:
+            vector_store = FAISS.from_documents([docs_content[0]], embeddings)
+            for doc in docs_content[1:]:
+                vector_store.add_documents([doc])
+        else:
+            vector_store = FAISS.from_documents(docs_content, embeddings)
         vector_store.save_local(folder_path=faiss_vector_store_path, index_name=index_name_prefix)
     else:
         vector_store = FAISS.load_local(folder_path=faiss_vector_store_path, embeddings=embeddings,
@@ -79,4 +84,19 @@ def get_vector_store(docs_base_path, index_base_path, index_name_prefix,
         vector_store = chroma_db(embeddings, all_docs, index_base_path, index_name_prefix, is_overwrite=False)
     elif index_type == indextype.IndexType.ELASTIC_SEARCH_INDEX:
         vector_store = elastic_db(embeddings, all_docs, index_base_path, index_name_prefix, is_overwrite=False)
+    return vector_store
+
+
+def get_vector_store_from_docs(docs_content, index_base_path, index_name_prefix,
+                               embeddings,
+                               index_type=indextype.IndexType.FAISS_INDEX, is_overwrite=False):
+    vector_store = None
+    if index_type == indextype.IndexType.FAISS_INDEX:
+        vector_store = faiss_db(embeddings, docs_content, index_base_path, index_name_prefix, is_overwrite=is_overwrite)
+    elif index_type == indextype.IndexType.CHROMA_INDEX:
+        vector_store = chroma_db(embeddings, docs_content, index_base_path, index_name_prefix,
+                                 is_overwrite=is_overwrite)
+    elif index_type == indextype.IndexType.ELASTIC_SEARCH_INDEX:
+        vector_store = elastic_db(embeddings, docs_content, index_base_path, index_name_prefix,
+                                  is_overwrite=is_overwrite)
     return vector_store

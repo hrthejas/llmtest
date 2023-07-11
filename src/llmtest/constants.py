@@ -18,7 +18,7 @@ GDRIVE_MOUNT_BASE_PATH = env.str("GDRIVE_MOUNT_BASE_PATH", "/content/drive")
 
 OPEN_AI_TEMP = env.int("OPEN_AI_TEMP", 0)
 
-OPEN_AI_MODEL_NAME = env.str("OPEN_AI_MODEL_NAME", "gpt-3.5-turbo")
+OPEN_AI_MODEL_NAME = env.str("OPEN_AI_MODEL_NAME", "gpt-3.5-turbo-16k")
 
 USER_NAME = env.str("USER_NAME", "user@infoworks.io")
 
@@ -41,7 +41,7 @@ QUESTION: {question}
 
 """
 
-DEFAULT_PROMPT_FOR_API = """Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
+DEFAULT_PROMPT_FOR_API_2 = """Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
 
 You are a REST API assistant working at Infoworks, but you are also an expert programmer.
 You are to complete the user request by composing a series of commands.
@@ -169,7 +169,7 @@ CSV_DOC_PARSE_ARGS = env.dict("CSV_DOC_PARSE_ARGS", DEFAULT_CSV_PARSE_ARGS)
 
 CSV_DOC_EMBEDDING_SOURCE_COLUMN = env.str("CSV_DOC_EMBEDDING_SOURCE_COLUMN", "Description")
 
-DEFAULT_PROMPT_FOR_API_2 = """Below is an instruction that describes a task. write a response that appropriately completes the request.
+DEFAULT_PROMPT_FOR_API = """Below is an instruction that describes a task. write a response that appropriately completes the request.
 
 ###INSTRUCTION:
 
@@ -195,29 +195,49 @@ IMPORTANT - The commands you have available are:
 IMPORTANT - Use these commands to Output the commands in JSON as an abstract syntax tree in one of the below format depending on <Method>:
 
 [
+  //Ask this for every parameter
   {{
     "command": "input",
-    "arguments": {{
-      //One for every body parameter
-      "question": "Enter workflow ids separated by comma (,):"
-    }}
+    "arguments": "Enter source id:"
+  }},
+  {{
+    "command": "input",
+    "arguments": "Enter table id:"
+  }},
+  {{
+    "command": "input",
+    "arguments": "Enter tags to add separated by comma (,):"
+  }},
+  {{
+    "command": "input",
+    "arguments": "Enter tags to remove separated by comma (,):"
+  }},
+  {{
+    "command": "input",
+    "arguments": "Enter is favorite (true/false):"
+  }},
+  {{
+    "command": "input",
+    "arguments": "Enter description:"
   }},
   {{
     "command": "execute",
     "arguments": {{
-      "type": "POST",
-      "url": "http://10.37.0.7:3001/v3/<path with query parameters if any>",
+      "type": "PUT",
+      "url": "http://10.37.0.7:3001/v3/sources/{{{{input_0}}}}/tables/{{{{input_1}}}}/metadata",
       "headers": {{
         "Content-Type": "application/json",
         "Authorization": "Bearer {{refresh_token}}"
       }},
       "body": {{
-        "workflow_ids": "{{{{input_0}}}}"
+        "tags_to_add": "{{{{input_2}}}}",
+        "tags_to_remove": "{{{{input_3}}}}",
+        "is_favorite": "{{{{input_4}}}}",
+        "description": "{{{{input_5}}}}"
       }}
     }}
   }}
 ]
-
 
 
 IMPORTANT - Only use the above mentioned commands and output commands in JSON as an abstract syntax tree as shown in examples below.
@@ -263,6 +283,19 @@ Question: {question}
 
 ###RESPONSE:
 """
+
+
+DEFAULT_PROMPT_FOR_SUMMARY = """Below is an instruction that describes a task. write a response that appropriately completes the request.
+
+###INSTRUCTION:
+Below is the response we got from api call made to infoworks restapi, generate a concise summary of the same 
+{question}
+
+{context}
+
+###RESPONSE:
+"""
+
 
 API_QUESTION_PROMPT = env.str("API_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_API)
 DOC_QUESTION_PROMPT = env.str("DOC_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_DOC)

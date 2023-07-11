@@ -1,16 +1,16 @@
-import torch
+import os
 import gradio as gr
-from llmtest import llmloader, constants, vectorstore, ingest, embeddings
+from getpass import getpass
+from llmtest import constants, vectorstore, ingest, embeddings, indextype
 from langchain.chains.question_answering import load_qa_chain
+from langchain.chains.summarize import load_summarize_chain
 from langchain.prompts import PromptTemplate
-from langchain.embeddings import (
-    HuggingFaceInstructEmbeddings
-)
+from langchain.chat_models import ChatOpenAI
 
 from llmtest.MysqlLogger import MysqlLogger
 
 
-class IWXBot:
+class IWXGPT:
     doc_vector_stores = []
     api_vector_stores = []
     api_prompt = None
@@ -20,32 +20,20 @@ class IWXBot:
     llm_model = None
     vector_embeddings = None
 
-    app_args = ["model_id", "docs_base_path", "index_base_path", "docs_index_name_prefix", "api_index_name_prefix",
-                "max_new_tokens", "use_4bit_quantization", "set_device_map", "mount_gdrive", "gdrive_mount_base_bath",
-                "device_map", "use_simple_llm_loader", "embedding_class", "model_name", "is_gptq_model",
-                "custom_quantization_config", "use_safetensors", "use_triton", "set_torch_dtype", "torch_dtype",
-                "api_prompt_template", "doc_prompt_template", "code_prompt_template"]
+    app_args = ["model_name", "temperature", "index_base_path", "docs_index_name_prefix", "api_index_name_prefix",
+                "max_new_tokens", "mount_gdrive", "gdrive_mount_base_bath", "embedding_model_name",
+                "api_prompt_template", "doc_prompt_template", "code_prompt_template", "summary_prompt_template"]
 
-    model_id = constants.DEFAULT_MODEL_NAME
+    model_name = constants.OPEN_AI_MODEL_NAME
+    temperature = constants.OPEN_AI_TEMP
+    max_new_tokens = constants.MAX_NEW_TOKENS
     docs_base_path = constants.DOCS_BASE_PATH
     index_base_path = constants.HF_INDEX_BASE_PATH
     docs_index_name_prefix = constants.DOC_INDEX_NAME_PREFIX
     api_index_name_prefix = constants.API_INDEX_NAME_PREFIX
-    max_new_tokens = constants.MAX_NEW_TOKENS
-    use_4bit_quantization = constants.USE_4_BIT_QUANTIZATION
-    set_device_map = constants.SET_DEVICE_MAP
     mount_gdrive = True
     gdrive_mount_base_bath = constants.GDRIVE_MOUNT_BASE_PATH
-    device_map = constants.DEFAULT_DEVICE_MAP
-    use_simple_llm_loader = False
-    embedding_class = HuggingFaceInstructEmbeddings
-    model_name = "hkunlp/instructor-large"
-    is_gptq_model = False
-    custom_quantization_config = None
-    use_safetensors = False
-    use_triton = False
-    set_torch_dtype = False
-    torch_dtype = torch.bfloat16
+    embedding_model_name = None
     api_prompt_template = constants.API_QUESTION_PROMPT
     doc_prompt_template = constants.DOC_QUESTION_PROMPT
     code_prompt_template = constants.DEFAULT_PROMPT_FOR_CODE
@@ -55,6 +43,7 @@ class IWXBot:
         return item
 
     def __init__(self, **kwargs):
+
         if len(kwargs) > 0:
             valid_kwargs = {name: kwargs.pop(name) for name in self.app_args if name in kwargs}
             for key, value in valid_kwargs.items():
@@ -65,23 +54,31 @@ class IWXBot:
         if self.mount_gdrive:
             ingest.mountGoogleDrive(self.gdrive_mount_base_bath)
 
+        os.environ["OPENAI_API_KEY"] = getpass("Paste your OpenAI API key here and hit enter:")
+
         pass
 
     def initialize_chat(self):
+        self.vector_embeddings = embeddings.get_openai_embeddings()
+        print("Got the embeddigns")
 
-        self.vector_embeddings = embeddings.get_embeddings(self.embedding_class, self.model_name)
+        self.llm_model = ChatOpenAI(model_name=self.model_name, temperature=self.temperature,
+                                    max_tokens=self.max_new_tokens)
+        print("Loaded LLM Model")
 
         for prefix in self.docs_index_name_prefix:
             self.doc_vector_stores.append(vectorstore.get_vector_store(index_base_path=self.index_base_path,
                                                                        index_name_prefix=prefix,
                                                                        docs_base_path=self.docs_base_path,
                                                                        embeddings=self.vector_embeddings))
+            print("Loaded vector store from " + self.index_base_path + "/" + prefix)
 
         for prefix in self.api_index_name_prefix:
             self.api_vector_stores.append(vectorstore.get_vector_store(index_base_path=self.index_base_path,
                                                                        index_name_prefix=prefix,
                                                                        docs_base_path=self.docs_base_path,
                                                                        embeddings=self.vector_embeddings))
+            print("Loaded vector store from " + self.index_base_path + "/" + prefix)
 
         self.api_prompt = PromptTemplate(template=self.api_prompt_template,
                                          input_variables=["context", "question"])
@@ -95,15 +92,6 @@ class IWXBot:
         self.summary_prompt = PromptTemplate(template=self.summary_prompt_template,
                                              input_variables=["context", "question"])
 
-        self.llm_model = llmloader.load_llm(self.model_id, use_4bit_quantization=self.use_4bit_quantization,
-                                            set_device_map=self.set_device_map,
-                                            max_new_tokens=self.max_new_tokens, device_map=self.device_map,
-                                            use_simple_llm_loader=self.use_simple_llm_loader,
-                                            is_quantized_gptq_model=self.is_gptq_model,
-                                            custom_quantiztion_config=self.custom_quantization_config,
-                                            use_triton=self.use_triton,
-                                            use_safetensors=self.use_safetensors, set_torch_dtype=self.set_torch_dtype,
-                                            torch_dtype=self.torch_dtype)
         print("Loaded all prompts")
         print("Init complete")
         pass
@@ -180,12 +168,13 @@ class IWXBot:
 
         return self.ask(answer_type, query, similarity_search_k, api_prompt, doc_prompt, code_prompt, summary_prompt)
 
-    def start_chat(self, debug=True, use_queue=False, share_ui=True, similarity_search_k=1, record_feedback=True,
+    def start_chat(self, debug=True, use_queue=False, share_ui=True, similarity_search_k=4, record_feedback=True,
                    api_prompt_template=constants.API_QUESTION_PROMPT,
                    doc_prompt_template=constants.DOC_QUESTION_PROMPT,
                    code_prompt_template=constants.DEFAULT_PROMPT_FOR_CODE,
                    summary_prompt_template=constants.DEFAULT_PROMPT_FOR_SUMMARY,
                    add_summary_answer_type=False):
+
         if add_summary_answer_type:
             choices = ['API', 'Docs', 'Code', 'Summary']
         else:
@@ -224,3 +213,34 @@ class IWXBot:
             interface.queue().launch(debug=debug, share=share_ui)
         else:
             interface.launch(debug=debug, share=share_ui)
+
+    def overwrite_vector_store(self, docs_type, docs_base_path, index_base_path, index_name,
+                               chunk_size, chunk_overlap, embeddings,
+                               vector_store_type=indextype.IndexType.FAISS_INDEX, model_name="gpt-3.5-turbo",
+                               encoding_name="cl100k_base"):
+        if docs_type == "CSV":
+            data = ingest.get_csv_docs_tiktoken(docs_base_path, chunk_size=chunk_size, chunk_overlap=chunk_overlap,
+                                                model_name=model_name, encoding_name=encoding_name)
+        elif docs_type == "MD":
+            data = ingest.getMarkDownDocs(docs_base_path, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+        elif docs_type == "HTML":
+            data = ingest.getHTMLDocs(docs_base_path, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+        elif docs_type == "JSON":
+            data = ingest.get_json_docs(docs_base_path, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+        else:
+            raise Exception("Un supported doc type " + docs_type)
+
+        store = vectorstore.get_vector_store_from_docs(data, index_base_path=index_base_path,
+                                                       index_name_prefix=index_name,
+                                                       embeddings=embeddings, index_type=vector_store_type,
+                                                       is_overwrite=True)
+        if store is not None:
+            print(
+                "Created vector store and persisted at " + index_base_path + "/" + vector_store_type.name + "/" + index_name)
+        else:
+            raise Exception("Error while creating or persisting vector store")
+
+        pass
+
+    def get_embeddings(self):
+        return embeddings.get_openai_embeddings()
