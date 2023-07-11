@@ -28,7 +28,7 @@ class IWXGPT:
     temperature = constants.OPEN_AI_TEMP
     max_new_tokens = constants.MAX_NEW_TOKENS
     docs_base_path = constants.DOCS_BASE_PATH
-    index_base_path = constants.HF_INDEX_BASE_PATH
+    index_base_path = constants.OAI_INDEX_BASE_PATH
     docs_index_name_prefix = constants.DOC_INDEX_NAME_PREFIX
     api_index_name_prefix = constants.API_INDEX_NAME_PREFIX
     mount_gdrive = True
