@@ -3,10 +3,12 @@ from environs import Env
 
 env = Env()
 
-MAX_NEW_TOKENS = env.int("MAX_NEW_TOKENS", 350)
+MAX_NEW_TOKENS = env.int("MAX_NEW_TOKENS", 800)
 DOCS_BASE_PATH = env.str("DOCS_BASE_PATH", "/content/drive/Shareddrives/Engineering/Chatbot/thejas/data/")
 INDEX_BASE_PATH = env.str("INDEX_BASE_PATH", "/content/drive/Shareddrives/Engineering/Chatbot/thejas/indexes/")
 HF_INDEX_BASE_PATH = env.str("HF_INDEX_BASE_PATH", "/content/drive/Shareddrives/Engineering/Chatbot/thejas/indexes/hf/")
+OAI_INDEX_BASE_PATH = env.str("OAI_INDEX_BASE_PATH",
+                              "/content/drive/Shareddrives/Engineering/Chatbot/thejas/indexes/openai/")
 
 DOC_INDEX_NAME_PREFIX = env.list("DOC_INDEX_NAME_PREFIX", ["doc_index"])
 API_INDEX_NAME_PREFIX = env.list("API_INDEX_NAME_PREFIX", ["api_index_csv"])
@@ -284,7 +286,6 @@ Question: {question}
 ###RESPONSE:
 """
 
-
 DEFAULT_PROMPT_FOR_SUMMARY = """Below is an instruction that describes a task. write a response that appropriately completes the request.
 
 ###INSTRUCTION:
@@ -295,7 +296,6 @@ Below is the response we got from api call made to infoworks restapi, generate a
 
 ###RESPONSE:
 """
-
 
 API_QUESTION_PROMPT = env.str("API_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_API)
 DOC_QUESTION_PROMPT = env.str("DOC_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_DOC)
