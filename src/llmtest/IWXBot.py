@@ -6,6 +6,7 @@ from langchain.prompts import PromptTemplate
 from langchain.embeddings import (
     HuggingFaceInstructEmbeddings
 )
+from langchain.chat_models import ChatOpenAI
 
 from llmtest.MysqlLogger import MysqlLogger
 
@@ -18,6 +19,7 @@ class IWXBot:
     code_prompt = None
     summary_prompt = None
     llm_model = None
+    summary_llm_model = None
     vector_embeddings = None
 
     app_args = ["model_id", "docs_base_path", "index_base_path", "docs_index_name_prefix", "api_index_name_prefix",
@@ -40,6 +42,8 @@ class IWXBot:
     use_simple_llm_loader = False
     embedding_class = HuggingFaceInstructEmbeddings
     model_name = "hkunlp/instructor-large"
+    summary_model_name = constants.OPEN_AI_MODEL_NAME
+    summary_temperature = constants.OPEN_AI_TEMP
     is_gptq_model = False
     custom_quantization_config = None
     use_safetensors = False
@@ -104,6 +108,8 @@ class IWXBot:
                                             use_triton=self.use_triton,
                                             use_safetensors=self.use_safetensors, set_torch_dtype=self.set_torch_dtype,
                                             torch_dtype=self.torch_dtype)
+        self.summary_llm_model = ChatOpenAI(model_name=self.summary_model_name, temperature=self.temperature,
+                                            max_tokens=self.max_new_tokens)
         print("Loaded all prompts")
         print("Init complete")
         pass
@@ -137,7 +143,7 @@ class IWXBot:
                     local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=code_prompt)
             elif answer_type == "Summary":
                 search_results = ingest.get_doc_from_text(query)
-                local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=summary_prompt)
+                local_qa_chain = load_qa_chain(llm=self.summary_llm_model, chain_type="stuff", prompt=summary_prompt)
             else:
                 for doc_vector_store in self.doc_vector_stores:
                     if search_results is None:
