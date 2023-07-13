@@ -39,7 +39,7 @@ setup(
     install_requires=[
         "pydantic==1.10.9",
         "environs",
-        "bitsandbytes",
+        "bitsandbytes==0.40.0",
         "peft",
         "accelerate",
         "einops",
