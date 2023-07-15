@@ -26,8 +26,9 @@ class IWXGPT:
     vector_embeddings = None
     api_iwx_retriever = None
     doc_iwx_retriever = None
-    memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
-    memory.clear()
+    chat_history = []
+    # memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+    # memory.clear()
     app_args = ["model_name", "temperature", "index_base_path", "docs_index_name_prefix", "api_index_name_prefix",
                 "max_new_tokens", "mount_gdrive", "gdrive_mount_base_bath", "embedding_model_name",
                 "api_prompt_template", "doc_prompt_template", "code_prompt_template", "summary_prompt_template"]
@@ -120,7 +121,7 @@ class IWXGPT:
         self.doc_iwx_retriever.set_search_k(similarity_search_k)
 
         if clear_memory:
-            self.memory.clear()
+            self.chat_history = []
 
         if api_prompt is None:
             api_prompt = self.api_prompt
@@ -146,36 +147,33 @@ class IWXGPT:
                     combine_docs_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=api_prompt)
                     chain = ConversationalRetrievalChain(retriever=self.api_iwx_retriever,
                                                          question_generator=question_generator,
-                                                         combine_docs_chain=combine_docs_chain,
-                                                         memory=self.memory)
+                                                         combine_docs_chain=combine_docs_chain)
                 elif answer_type == "API_HELP":
                     question_generator = LLMChain(llm=self.llm_model, prompt=api_help_prompt)
                     combine_docs_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=api_help_prompt)
                     chain = ConversationalRetrievalChain(retriever=self.api_iwx_retriever,
                                                          question_generator=question_generator,
-                                                         combine_docs_chain=combine_docs_chain,
-                                                         memory=self.memory)
+                                                         combine_docs_chain=combine_docs_chain)
                 elif answer_type == "Code":
                     question_generator = LLMChain(llm=self.llm_model, prompt=code_prompt)
                     combine_docs_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=code_prompt)
                     chain = ConversationalRetrievalChain(retriever=self.api_iwx_retriever,
                                                          question_generator=question_generator,
-                                                         combine_docs_chain=combine_docs_chain,
-                                                         memory=self.memory)
+                                                         combine_docs_chain=combine_docs_chain)
                 elif answer_type == "Doc":
                     question_generator = LLMChain(llm=self.llm_model, prompt=doc_prompt)
                     combine_docs_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=doc_prompt)
                     chain = ConversationalRetrievalChain(retriever=self.doc_iwx_retriever,
                                                          question_generator=question_generator,
-                                                         combine_docs_chain=combine_docs_chain,
-                                                         memory=self.memory)
+                                                         combine_docs_chain=combine_docs_chain)
                 else:
                     raise Exception("Unknown Answer Type")
-            result = chain({"question": query})
+            result = chain({"question": query,"chat_history": self.chat_history})
             bot_message = result['answer']
         else:
             bot_message = "Seams like iwxchat model is not loaded or not requested to give answer"
 
+        chat_history = [(query, bot_message)]
         print(bot_message)
         return bot_message
 
