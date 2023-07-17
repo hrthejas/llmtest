@@ -3,11 +3,16 @@ import gradio as gr
 from llmtest import llmloader, constants, vectorstore, ingest, embeddings
 from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
+from langchain.chains import ConversationalRetrievalChain
+from langchain.memory import ConversationBufferMemory
 from langchain.embeddings import (
     HuggingFaceInstructEmbeddings
 )
 
+from llmtest.IWXRetriever import IWXRetriever
 from llmtest.MysqlLogger import MysqlLogger
+from langchain.chains import LLMChain
+
 
 
 class IWXBot:
@@ -17,8 +22,12 @@ class IWXBot:
     doc_prompt = None
     code_prompt = None
     summary_prompt = None
+    api_help_prompt = None
     llm_model = None
     vector_embeddings = None
+    api_iwx_retriever = None
+    doc_iwx_retriever = None
+    memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
 
     app_args = ["model_id", "docs_base_path", "index_base_path", "docs_index_name_prefix", "api_index_name_prefix",
                 "max_new_tokens", "use_4bit_quantization", "set_device_map", "mount_gdrive", "gdrive_mount_base_bath",
@@ -50,6 +59,7 @@ class IWXBot:
     doc_prompt_template = constants.DOC_QUESTION_PROMPT
     code_prompt_template = constants.DEFAULT_PROMPT_FOR_CODE
     summary_prompt_template = constants.DEFAULT_PROMPT_FOR_SUMMARY
+    api_help_prompt_template = constants.DEFAULT_PROMPT_FOR_API_HELP
 
     def __getitem__(self, item):
         return item
@@ -76,12 +86,16 @@ class IWXBot:
                                                                        index_name_prefix=prefix,
                                                                        docs_base_path=self.docs_base_path,
                                                                        embeddings=self.vector_embeddings))
+        self.doc_iwx_retriever = IWXRetriever()
+        self.doc_iwx_retriever.initialise(self.doc_vector_stores)
 
         for prefix in self.api_index_name_prefix:
             self.api_vector_stores.append(vectorstore.get_vector_store(index_base_path=self.index_base_path,
                                                                        index_name_prefix=prefix,
                                                                        docs_base_path=self.docs_base_path,
                                                                        embeddings=self.vector_embeddings))
+        self.api_iwx_retriever = IWXRetriever()
+        self.api_iwx_retriever.initialise(self.api_vector_stores)
 
         self.api_prompt = PromptTemplate(template=self.api_prompt_template,
                                          input_variables=["context", "question"])
@@ -94,6 +108,9 @@ class IWXBot:
 
         self.summary_prompt = PromptTemplate(template=self.summary_prompt_template,
                                              input_variables=["context", "question"])
+
+        self.api_help_prompt = PromptTemplate(template=self.api_help_prompt_template,
+                                              input_variables=["context", "question"])
 
         self.llm_model = llmloader.load_llm(self.model_id, use_4bit_quantization=self.use_4bit_quantization,
                                             set_device_map=self.set_device_map,
@@ -159,6 +176,78 @@ class IWXBot:
         print(bot_message)
         print(reference_docs)
         return bot_message, reference_docs
+
+    def ask1(self, answer_type, query, similarity_search_k=4, api_prompt=None,
+            doc_prompt=None, code_prompt=None, summary_prompt=None, api_help_prompt=None, clear_memory=False):
+        from langchain.chains.conversational_retrieval.prompts import CONDENSE_QUESTION_PROMPT
+
+        self.api_iwx_retriever.set_search_k(similarity_search_k)
+        self.doc_iwx_retriever.set_search_k(similarity_search_k)
+
+        if clear_memory:
+            self.memory.clear()
+
+        if api_prompt is None:
+            api_prompt = self.api_prompt
+        if doc_prompt is None:
+            doc_prompt = self.doc_prompt
+        if code_prompt is None:
+            code_prompt = self.code_prompt
+        if summary_prompt is None:
+            summary_prompt = self.summary_prompt
+        if api_help_prompt is None:
+            api_help_prompt = self.api_help_prompt
+
+        if self.llm_model is not None:
+            chain = None
+            if answer_type == "Summary":
+                search_results = ingest.get_doc_from_text(query)
+                local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=summary_prompt)
+                result = local_qa_chain({"input_documents": search_results, "question": query})
+                bot_message = result["output_text"]
+            else:
+                if answer_type == "API":
+
+                    chain = ConversationalRetrievalChain.from_llm(self.llm_model, memory=self.memory,
+                                                               retriever=self.api_iwx_retriever,
+                                                               combine_docs_chain_kwargs={"prompt": api_prompt})
+
+                    # question_generator = LLMChain(llm=self.llm_model, prompt=CONDENSE_QUESTION_PROMPT)
+                    # combine_docs_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=api_prompt)
+                    # chain = ConversationalRetrievalChain(retriever=self.api_iwx_retriever,
+                    #                                      question_generator=question_generator,
+                    #                                      combine_docs_chain=combine_docs_chain)
+                elif answer_type == "API_HELP":
+                    question_generator = LLMChain(llm=self.llm_model, prompt=CONDENSE_QUESTION_PROMPT)
+                    combine_docs_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=api_help_prompt)
+                    chain = ConversationalRetrievalChain(retriever=self.api_iwx_retriever,
+                                                         question_generator=question_generator,
+                                                         combine_docs_chain=combine_docs_chain)
+                elif answer_type == "Code":
+                    question_generator = LLMChain(llm=self.llm_model, prompt=CONDENSE_QUESTION_PROMPT)
+                    combine_docs_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=code_prompt)
+                    chain = ConversationalRetrievalChain(retriever=self.api_iwx_retriever,
+                                                         question_generator=question_generator,
+                                                         combine_docs_chain=combine_docs_chain)
+                elif answer_type == "Doc":
+                    question_generator = LLMChain(llm=self.llm_model, prompt=CONDENSE_QUESTION_PROMPT)
+                    combine_docs_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=doc_prompt)
+                    chain = ConversationalRetrievalChain(retriever=self.doc_iwx_retriever,
+                                                         question_generator=question_generator,
+                                                         combine_docs_chain=combine_docs_chain)
+                else:
+                    raise Exception("Unknown Answer Type")
+            if chain is not None:
+                result = chain({"question": query})
+                bot_message = result['answer']
+            else:
+                bot_message = "Chain is none"
+        else:
+            bot_message = "Seams like iwxchat model is not loaded or not requested to give answer"
+
+        print("Answer")
+        print(bot_message)
+        return bot_message
 
     def ask_with_prompt(self, answer_type, query, similarity_search_k=4,
                         api_prompt_template=api_prompt_template,
