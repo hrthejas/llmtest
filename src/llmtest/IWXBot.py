@@ -179,7 +179,6 @@ class IWXBot:
 
     def ask1(self, answer_type, query, similarity_search_k=4, api_prompt=None,
             doc_prompt=None, code_prompt=None, summary_prompt=None, api_help_prompt=None, clear_memory=False):
-        from langchain.chains.conversational_retrieval.prompts import CONDENSE_QUESTION_PROMPT
 
         self.api_iwx_retriever.set_search_k(similarity_search_k)
         self.doc_iwx_retriever.set_search_k(similarity_search_k)
@@ -225,6 +224,7 @@ class IWXBot:
                 else:
                     raise Exception("Unknown Answer Type")
             if chain is not None:
+                print(chain.get_chat_history)
                 result = chain({"question": query})
                 bot_message = result['answer']
             else:
