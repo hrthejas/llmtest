@@ -177,13 +177,14 @@ class IWXBot:
         print(reference_docs)
         return bot_message, reference_docs
 
-    def ask1(self, answer_type, query, similarity_search_k=4, api_prompt=None,
-             doc_prompt=None, code_prompt=None, summary_prompt=None, api_help_prompt=None, clear_memory=False):
+    def ask_with_memory(self, answer_type, query, similarity_search_k=4, api_prompt=None,
+                        doc_prompt=None, code_prompt=None, summary_prompt=None, api_help_prompt=None,
+                        new_chat=False):
 
         self.api_iwx_retriever.set_search_k(similarity_search_k)
         self.doc_iwx_retriever.set_search_k(similarity_search_k)
 
-        if clear_memory:
+        if new_chat:
             self.chat_history = []
 
         if api_prompt is None:
@@ -239,7 +240,9 @@ class IWXBot:
                         api_prompt_template=api_prompt_template,
                         doc_prompt_template=doc_prompt_template,
                         code_prompt_template=code_prompt_template,
-                        summary_prompt_template=summary_prompt_template):
+                        summary_prompt_template=summary_prompt_template,
+                        api_help_prompt_template=api_help_prompt_template,
+                        new_chat=False):
 
         api_prompt = PromptTemplate(template=api_prompt_template,
                                     input_variables=["context", "question"])
@@ -253,9 +256,13 @@ class IWXBot:
         summary_prompt = PromptTemplate(template=summary_prompt_template,
                                         input_variables=["context", "question"])
 
-        return self.ask(answer_type, query, similarity_search_k, api_prompt, doc_prompt, code_prompt, summary_prompt)
+        api_help_prompt = PromptTemplate(template=api_help_prompt_template,
+                                         input_variables=["context", "question"])
 
-    def start_chat(self, debug=True, use_queue=False, share_ui=True, similarity_search_k=1, record_feedback=True,
+        return self.ask_with_memory(answer_type, query, similarity_search_k, api_prompt, doc_prompt, code_prompt,
+                                    summary_prompt, api_help_prompt, new_chat)
+
+    def start_chat(self, debug=True, use_queue=False, share_ui=True, similarity_search_k=2, record_feedback=True,
                    api_prompt_template=constants.API_QUESTION_PROMPT,
                    doc_prompt_template=constants.DOC_QUESTION_PROMPT,
                    code_prompt_template=constants.DEFAULT_PROMPT_FOR_CODE,
