@@ -27,4 +27,5 @@ class IWXRetriever(BaseRetriever):
                 search_results = vector_store.similarity_search(query, k=self.search_k)
             else:
                 search_results = search_results + vector_store.similarity_search(query, k=self.search_k)
+        print(search_results)
         return search_results
