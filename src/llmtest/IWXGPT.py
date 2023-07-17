@@ -144,8 +144,7 @@ class IWXGPT:
 
                     chain = ConversationalRetrievalChain.from_llm(self.llm_model, memory=self.memory,
                                                                retriever=self.api_iwx_retriever,
-                                                               combine_docs_chain_kwargs={"chain_type": "stuff",
-                                                                                          "prompt": api_prompt})
+                                                               combine_docs_chain_kwargs={"prompt": api_prompt})
 
                     # question_generator = LLMChain(llm=self.llm_model, prompt=CONDENSE_QUESTION_PROMPT)
                     # combine_docs_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=api_prompt)
