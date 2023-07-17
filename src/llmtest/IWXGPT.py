@@ -172,16 +172,13 @@ class IWXGPT:
                 else:
                     raise Exception("Unknown Answer Type")
             if chain is not None:
-                result = chain({"question": query, "chat_history": self.chat_history})
+                result = chain({"question": query})
                 bot_message = result['answer']
             else:
                 bot_message = "Chain is none"
         else:
             bot_message = "Seams like iwxchat model is not loaded or not requested to give answer"
 
-        self.chat_history = [(query, bot_message)]
-        print("History")
-        print(self.chat_history)
         print("Answer")
         print(bot_message)
         return bot_message
