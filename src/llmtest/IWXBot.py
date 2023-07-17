@@ -14,7 +14,6 @@ from llmtest.MysqlLogger import MysqlLogger
 from langchain.chains import LLMChain
 
 
-
 class IWXBot:
     doc_vector_stores = []
     api_vector_stores = []
@@ -27,6 +26,7 @@ class IWXBot:
     vector_embeddings = None
     api_iwx_retriever = None
     doc_iwx_retriever = None
+    chat_history = []
     memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
 
     app_args = ["model_id", "docs_base_path", "index_base_path", "docs_index_name_prefix", "api_index_name_prefix",
@@ -178,13 +178,13 @@ class IWXBot:
         return bot_message, reference_docs
 
     def ask1(self, answer_type, query, similarity_search_k=4, api_prompt=None,
-            doc_prompt=None, code_prompt=None, summary_prompt=None, api_help_prompt=None, clear_memory=False):
+             doc_prompt=None, code_prompt=None, summary_prompt=None, api_help_prompt=None, clear_memory=False):
 
         self.api_iwx_retriever.set_search_k(similarity_search_k)
         self.doc_iwx_retriever.set_search_k(similarity_search_k)
 
         if clear_memory:
-            self.memory.clear()
+            self.chat_history = []
 
         if api_prompt is None:
             api_prompt = self.api_prompt
@@ -206,32 +206,33 @@ class IWXBot:
                 bot_message = result["output_text"]
             else:
                 if answer_type == "API":
-                    chain = ConversationalRetrievalChain.from_llm(self.llm_model, memory=self.memory,
-                                                               retriever=self.api_iwx_retriever,
-                                                               combine_docs_chain_kwargs={"prompt": api_prompt})
+                    chain = ConversationalRetrievalChain.from_llm(self.llm_model,
+                                                                  retriever=self.api_iwx_retriever,
+                                                                  combine_docs_chain_kwargs={"prompt": api_prompt})
                 elif answer_type == "API_HELP":
-                    chain = ConversationalRetrievalChain.from_llm(self.llm_model, memory=self.memory,
+                    chain = ConversationalRetrievalChain.from_llm(self.llm_model,
                                                                   retriever=self.api_iwx_retriever,
                                                                   combine_docs_chain_kwargs={"prompt": api_help_prompt})
                 elif answer_type == "Code":
-                    chain = ConversationalRetrievalChain.from_llm(self.llm_model, memory=self.memory,
+                    chain = ConversationalRetrievalChain.from_llm(self.llm_model,
                                                                   retriever=self.api_iwx_retriever,
                                                                   combine_docs_chain_kwargs={"prompt": code_prompt})
                 elif answer_type == "Doc":
-                    chain = ConversationalRetrievalChain.from_llm(self.llm_model, memory=self.memory,
+                    chain = ConversationalRetrievalChain.from_llm(self.llm_model,
                                                                   retriever=self.doc_iwx_retriever,
                                                                   combine_docs_chain_kwargs={"prompt": doc_prompt})
                 else:
                     raise Exception("Unknown Answer Type")
             if chain is not None:
                 print(chain.get_chat_history)
-                result = chain({"question": query})
+                result = chain({"question": query, "chat_history": self.chat_history})
                 bot_message = result['answer']
             else:
                 bot_message = "Chain is none"
         else:
             bot_message = "Seams like iwxchat model is not loaded or not requested to give answer"
         print(bot_message)
+        chat_history = [(query, bot_message)]
         return bot_message
 
     def ask_with_prompt(self, answer_type, query, similarity_search_k=4,
