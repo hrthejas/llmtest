@@ -136,7 +136,7 @@ class IWXGPT:
             api_help_prompt = self.api_help_prompt
 
         if self.llm_model is not None:
-
+            chain = None
             if answer_type == "Summary":
                 search_results = ingest.get_doc_from_text(query)
                 local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=summary_prompt)
@@ -169,8 +169,11 @@ class IWXGPT:
                                                          combine_docs_chain=combine_docs_chain)
                 else:
                     raise Exception("Unknown Answer Type")
-            result = chain({"question": query,"chat_history": self.chat_history})
-            bot_message = result['answer']
+            if chain is not None:
+                result = chain({"question": query, "chat_history": self.chat_history})
+                bot_message = result['answer']
+            else:
+                bot_message = "Chain is none"
         else:
             bot_message = "Seams like iwxchat model is not loaded or not requested to give answer"
 
