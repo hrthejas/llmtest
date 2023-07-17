@@ -174,8 +174,10 @@ class IWXGPT:
         else:
             bot_message = "Seams like iwxchat model is not loaded or not requested to give answer"
 
-        chat_history = [(query, bot_message)]
-        print(chat_history)
+        self.chat_history = [(query, bot_message)]
+        print("History")
+        print(self.chat_history)
+        print("Answer")
         print(bot_message)
         return bot_message
 
