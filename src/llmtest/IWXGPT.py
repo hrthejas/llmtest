@@ -26,9 +26,8 @@ class IWXGPT:
     vector_embeddings = None
     api_iwx_retriever = None
     doc_iwx_retriever = None
-    chat_history = []
-    # memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
-    # memory.clear()
+    memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+    memory.clear()
     app_args = ["model_name", "temperature", "index_base_path", "docs_index_name_prefix", "api_index_name_prefix",
                 "max_new_tokens", "mount_gdrive", "gdrive_mount_base_bath", "embedding_model_name",
                 "api_prompt_template", "doc_prompt_template", "code_prompt_template", "summary_prompt_template"]
@@ -116,13 +115,11 @@ class IWXGPT:
             doc_prompt=None, code_prompt=None, summary_prompt=None, api_help_prompt=None, clear_memory=False):
         from langchain.chains.conversational_retrieval.prompts import CONDENSE_QUESTION_PROMPT
 
-        global chain
-
         self.api_iwx_retriever.set_search_k(similarity_search_k)
         self.doc_iwx_retriever.set_search_k(similarity_search_k)
 
         if clear_memory:
-            self.chat_history = []
+            self.memory.clear()
 
         if api_prompt is None:
             api_prompt = self.api_prompt
@@ -144,11 +141,17 @@ class IWXGPT:
                 bot_message = result["output_text"]
             else:
                 if answer_type == "API":
-                    question_generator = LLMChain(llm=self.llm_model, prompt=CONDENSE_QUESTION_PROMPT)
-                    combine_docs_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=api_prompt)
-                    chain = ConversationalRetrievalChain(retriever=self.api_iwx_retriever,
-                                                         question_generator=question_generator,
-                                                         combine_docs_chain=combine_docs_chain)
+
+                    chain = ConversationalRetrievalChain.from_llm(self.llm_model, memory=self.memory,
+                                                               retriever=self.api_iwx_retriever,
+                                                               combine_docs_chain_kwargs={"chain_type": "stuff",
+                                                                                          "prompt": api_prompt})
+
+                    # question_generator = LLMChain(llm=self.llm_model, prompt=CONDENSE_QUESTION_PROMPT)
+                    # combine_docs_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=api_prompt)
+                    # chain = ConversationalRetrievalChain(retriever=self.api_iwx_retriever,
+                    #                                      question_generator=question_generator,
+                    #                                      combine_docs_chain=combine_docs_chain)
                 elif answer_type == "API_HELP":
                     question_generator = LLMChain(llm=self.llm_model, prompt=CONDENSE_QUESTION_PROMPT)
                     combine_docs_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=api_help_prompt)
