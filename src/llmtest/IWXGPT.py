@@ -114,6 +114,7 @@ class IWXGPT:
 
     def ask(self, answer_type, query, similarity_search_k=4, api_prompt=None,
             doc_prompt=None, code_prompt=None, summary_prompt=None, api_help_prompt=None, clear_memory=False):
+        from langchain.chains.conversational_retrieval.prompts import CONDENSE_QUESTION_PROMPT
 
         global chain
 
@@ -143,25 +144,25 @@ class IWXGPT:
                 bot_message = result["output_text"]
             else:
                 if answer_type == "API":
-                    question_generator = LLMChain(llm=self.llm_model, prompt=api_prompt)
+                    question_generator = LLMChain(llm=self.llm_model, prompt=CONDENSE_QUESTION_PROMPT)
                     combine_docs_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=api_prompt)
                     chain = ConversationalRetrievalChain(retriever=self.api_iwx_retriever,
                                                          question_generator=question_generator,
                                                          combine_docs_chain=combine_docs_chain)
                 elif answer_type == "API_HELP":
-                    question_generator = LLMChain(llm=self.llm_model, prompt=api_help_prompt)
+                    question_generator = LLMChain(llm=self.llm_model, prompt=CONDENSE_QUESTION_PROMPT)
                     combine_docs_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=api_help_prompt)
                     chain = ConversationalRetrievalChain(retriever=self.api_iwx_retriever,
                                                          question_generator=question_generator,
                                                          combine_docs_chain=combine_docs_chain)
                 elif answer_type == "Code":
-                    question_generator = LLMChain(llm=self.llm_model, prompt=code_prompt)
+                    question_generator = LLMChain(llm=self.llm_model, prompt=CONDENSE_QUESTION_PROMPT)
                     combine_docs_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=code_prompt)
                     chain = ConversationalRetrievalChain(retriever=self.api_iwx_retriever,
                                                          question_generator=question_generator,
                                                          combine_docs_chain=combine_docs_chain)
                 elif answer_type == "Doc":
-                    question_generator = LLMChain(llm=self.llm_model, prompt=doc_prompt)
+                    question_generator = LLMChain(llm=self.llm_model, prompt=CONDENSE_QUESTION_PROMPT)
                     combine_docs_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=doc_prompt)
                     chain = ConversationalRetrievalChain(retriever=self.doc_iwx_retriever,
                                                          question_generator=question_generator,
