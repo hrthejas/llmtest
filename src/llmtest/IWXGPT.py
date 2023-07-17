@@ -175,6 +175,7 @@ class IWXGPT:
             bot_message = "Seams like iwxchat model is not loaded or not requested to give answer"
 
         chat_history = [(query, bot_message)]
+        print(chat_history)
         print(bot_message)
         return bot_message
 
