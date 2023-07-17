@@ -224,7 +224,7 @@ class IWXBot:
                 else:
                     raise Exception("Unknown Answer Type")
             if chain is not None:
-                print(chain.get_chat_history)
+                print(self.chat_history)
                 result = chain({"question": query, "chat_history": self.chat_history})
                 bot_message = result['answer']
             else:
