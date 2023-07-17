@@ -207,34 +207,21 @@ class IWXBot:
                 bot_message = result["output_text"]
             else:
                 if answer_type == "API":
-
                     chain = ConversationalRetrievalChain.from_llm(self.llm_model, memory=self.memory,
                                                                retriever=self.api_iwx_retriever,
                                                                combine_docs_chain_kwargs={"prompt": api_prompt})
-
-                    # question_generator = LLMChain(llm=self.llm_model, prompt=CONDENSE_QUESTION_PROMPT)
-                    # combine_docs_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=api_prompt)
-                    # chain = ConversationalRetrievalChain(retriever=self.api_iwx_retriever,
-                    #                                      question_generator=question_generator,
-                    #                                      combine_docs_chain=combine_docs_chain)
                 elif answer_type == "API_HELP":
-                    question_generator = LLMChain(llm=self.llm_model, prompt=CONDENSE_QUESTION_PROMPT)
-                    combine_docs_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=api_help_prompt)
-                    chain = ConversationalRetrievalChain(retriever=self.api_iwx_retriever,
-                                                         question_generator=question_generator,
-                                                         combine_docs_chain=combine_docs_chain)
+                    chain = ConversationalRetrievalChain.from_llm(self.llm_model, memory=self.memory,
+                                                                  retriever=self.api_iwx_retriever,
+                                                                  combine_docs_chain_kwargs={"prompt": api_help_prompt})
                 elif answer_type == "Code":
-                    question_generator = LLMChain(llm=self.llm_model, prompt=CONDENSE_QUESTION_PROMPT)
-                    combine_docs_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=code_prompt)
-                    chain = ConversationalRetrievalChain(retriever=self.api_iwx_retriever,
-                                                         question_generator=question_generator,
-                                                         combine_docs_chain=combine_docs_chain)
+                    chain = ConversationalRetrievalChain.from_llm(self.llm_model, memory=self.memory,
+                                                                  retriever=self.api_iwx_retriever,
+                                                                  combine_docs_chain_kwargs={"prompt": code_prompt})
                 elif answer_type == "Doc":
-                    question_generator = LLMChain(llm=self.llm_model, prompt=CONDENSE_QUESTION_PROMPT)
-                    combine_docs_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=doc_prompt)
-                    chain = ConversationalRetrievalChain(retriever=self.doc_iwx_retriever,
-                                                         question_generator=question_generator,
-                                                         combine_docs_chain=combine_docs_chain)
+                    chain = ConversationalRetrievalChain.from_llm(self.llm_model, memory=self.memory,
+                                                                  retriever=self.doc_iwx_retriever,
+                                                                  combine_docs_chain_kwargs={"prompt": doc_prompt})
                 else:
                     raise Exception("Unknown Answer Type")
             if chain is not None:
@@ -244,8 +231,6 @@ class IWXBot:
                 bot_message = "Chain is none"
         else:
             bot_message = "Seams like iwxchat model is not loaded or not requested to give answer"
-
-        print("Answer")
         print(bot_message)
         return bot_message
 
