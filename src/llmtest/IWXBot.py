@@ -232,7 +232,7 @@ class IWXBot:
         else:
             bot_message = "Seams like iwxchat model is not loaded or not requested to give answer"
         print(bot_message)
-        chat_history = [(query, bot_message)]
+        self.chat_history = [(query, bot_message)]
         return bot_message
 
     def ask_with_prompt(self, answer_type, query, similarity_search_k=4,
