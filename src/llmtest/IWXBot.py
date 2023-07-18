@@ -177,7 +177,7 @@ class IWXBot:
         print(reference_docs)
         return bot_message, reference_docs
 
-    def ask_with_memory(self, answer_type, query, similarity_search_k=4, api_prompt=None,
+    def ask_with_memory(self, answer_type, query, similarity_search_k=2, api_prompt=None,
                         doc_prompt=None, code_prompt=None, summary_prompt=None, api_help_prompt=None,
                         new_chat=False):
 
@@ -275,11 +275,8 @@ class IWXBot:
         data = [('Bad', '1'), ('Ok', '2'), ('Good', '3'), ('Very Good', '4'), ('Perfect', '5')]
 
         def chatbot(choice_selected, message):
-            return self.ask_with_prompt(choice_selected, message, similarity_search_k=similarity_search_k,
-                                        api_prompt_template=api_prompt_template,
-                                        doc_prompt_template=doc_prompt_template,
-                                        code_prompt_template=code_prompt_template,
-                                        summary_prompt_template=summary_prompt_template)
+            return self.ask_with_memory(choice_selected, message, similarity_search_k=similarity_search_k,
+                                        new_chat=True)
 
         msg = gr.Textbox(label="User Question")
         submit = gr.Button("Submit")
