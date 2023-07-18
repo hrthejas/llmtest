@@ -283,7 +283,7 @@ class IWXBot:
 
         msg = gr.Textbox(label="User Question")
         submit = gr.Button("Submit")
-        choice = gr.inputs.Dropdown(choices=choices, default="Docs", label="Choose question Type")
+        choice = gr.inputs.Dropdown(choices=choices, default="Code", label="Choose question Type")
         output_textbox = gr.outputs.Textbox(label="IWX Bot")
         output_textbox.show_copy_button = True
         output_textbox.lines = 10
