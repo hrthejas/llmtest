@@ -303,3 +303,37 @@ class IWXBot:
             interface.queue().launch(debug=debug, share=share_ui)
         else:
             interface.launch(debug=debug, share=share_ui)
+
+    def start_iwx_chat(self, debug=True, use_queue=False, share_ui=True, similarity_search_k=2, record_feedback=True,
+                       add_summary_answer_type=False):
+        if add_summary_answer_type:
+            choices = ['API', 'Docs', 'Code', 'Summary']
+        else:
+            choices = ['API', 'Docs', 'Code']
+        data = [('Bad', '1'), ('Ok', '2'), ('Good', '3'), ('Very Good', '4'), ('Perfect', '5')]
+
+        def chatbot(choice_selected, message):
+            return self.ask_with_memory(choice_selected, message, similarity_search_k=similarity_search_k,
+                                        new_chat=True)
+
+        msg = gr.Textbox(label="User Question")
+        submit = gr.Button("Submit")
+        choice = gr.inputs.Dropdown(choices=choices, default="Code", label="Choose question Type")
+        output_textbox = gr.outputs.Textbox(label="IWX Bot")
+        output_textbox.show_copy_button = True
+        output_textbox.lines = 10
+        output_textbox.max_lines = 10
+
+        if record_feedback:
+            interface = gr.Interface(fn=chatbot, inputs=[choice, msg], outputs=output_textbox,
+                                     theme="darkhuggingface",
+                                     title="IWX CHATBOT", allow_flagging="manual", flagging_callback=MysqlLogger(),
+                                     flagging_options=data)
+        else:
+            interface = gr.Interface(fn=chatbot, inputs=[choice, msg], outputs=output_textbox,
+                                     theme="darkhuggingface",
+                                     title="IWX CHATBOT", allow_flagging="never")
+        if use_queue:
+            interface.queue().launch(debug=debug, share=share_ui)
+        else:
+            interface.launch(debug=debug, share=share_ui)
