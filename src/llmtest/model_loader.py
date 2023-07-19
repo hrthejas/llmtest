@@ -3,7 +3,7 @@ from transformers import BitsAndBytesConfig
 
 
 def get_gptq_model(model_id, device_map, use_quantization, use_safetensors, use_triton, custom_quantization_conf,
-                   additional_model_args):
+                   additional_model_args, model_basename=None):
     from auto_gptq import AutoGPTQForCausalLM, BaseQuantizeConfig
 
     if additional_model_args is None:
@@ -57,10 +57,11 @@ def get_generic_model(model_id, model_class, device_map, use_quantization, custo
 
 
 def get_model(model_id, model_class, device_map, use_quantization, additional_model_args, is_gptq_model, is_gglm_model,
-              custom_quantization_conf, use_safetensors, use_triton, pass_device_map, set_dorch_dtype, torch_dtype):
+              custom_quantization_conf, use_safetensors, use_triton, pass_device_map, set_dorch_dtype, torch_dtype,
+              model_basename):
     if is_gptq_model:
         return get_gptq_model(model_id, device_map, use_quantization, use_safetensors, use_triton,
-                              custom_quantization_conf, additional_model_args)
+                              custom_quantization_conf, additional_model_args, model_basename)
     elif is_gglm_model:
         return None
     else:

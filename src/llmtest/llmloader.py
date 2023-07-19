@@ -27,11 +27,16 @@ def get_llm(model_id,
             additional_model_args=None,
             additional_pipeline_args=None,
             additional_tokenizer_args=None,
-            custom_quantization_config=None, pass_device_map=False):
+            custom_quantization_config=None,
+            pass_device_map=False,
+            model_basename=None,
+            set_torch_dtype=False,
+            torch_dtype=torch.bfloat16
+            ):
     tokenizer = model_loader.get_tokenizer(model_id, tokenizer_class, additional_tokenizer_args)
     model = model_loader.get_model(model_id, model_class, device_map, use_quantization, additional_model_args,
                                    is_gptq_model, is_gglm_model, custom_quantization_config, use_safetensors,
-                                   use_triton, pass_device_map)
+                                   use_triton, pass_device_map, set_torch_dtype, torch_dtype, model_basename)
     pipeline = pipeline_loader.get_pipeline(model, task, tokenizer, max_new_tokens, additional_pipeline_args)
 
     AutoModelForCausalLM.from_pretrained()
@@ -48,7 +53,7 @@ def load_llm(
         device_map="auto",
         do_sample=True,
         top_k=1,
-        num_return_sequences=1,
+        num_return_sequences=5,
         max_new_tokens=256,
         set_device_map=False,
         use_simple_llm_loader=False,
@@ -56,29 +61,30 @@ def load_llm(
         use_safetensors=False,
         use_triton=False,
         custom_quantiztion_config=None,
-        additional_model_Args=None,
+        additional_model_args=None,
         is_gglm_model=False,
         additional_pipeline_args=None,
         additional_tokenizer_args=None,
         set_eos_token=True,
         set_pad_token=True,
         set_torch_dtype=False,
-        torch_dtype=torch.bfloat16
+        torch_dtype=torch.bfloat16,
+        model_basename=None
 ):
     if additional_pipeline_args is None:
         additional_pipeline_args = {}
 
     if use_simple_llm_loader:
-        pipe = pipeline_loader.get_pipeline_from_model_id(model_id, task, max_new_tokens, additional_model_Args,
+        pipe = pipeline_loader.get_pipeline_from_model_id(model_id, task, max_new_tokens, additional_model_args,
                                                           device_map,
                                                           torch_dtype=torch.bfloat16)
         return HuggingFacePipeline(pipeline=pipe)
     else:
         tokenizer = model_loader.get_tokenizer(model_id, tokenizer_class, additional_tokenizer_args)
-        model = model_loader.get_model(model_id, model_class, device_map, use_4bit_quantization, additional_model_Args,
+        model = model_loader.get_model(model_id, model_class, device_map, use_4bit_quantization, additional_model_args,
                                        is_quantized_gptq_model, is_gglm_model, custom_quantiztion_config,
                                        use_safetensors,
-                                       use_triton, set_device_map,set_torch_dtype,torch_dtype)
+                                       use_triton, set_device_map, set_torch_dtype, torch_dtype, model_basename)
 
         additional_pipeline_args['top_k'] = top_k
         additional_pipeline_args['num_return_sequences'] = num_return_sequences
@@ -94,7 +100,6 @@ def load_llm(
 
         print("Additional pipeline args ")
         print(additional_pipeline_args)
-
 
         if set_device_map:
             print("Creating a pipeline with device map")

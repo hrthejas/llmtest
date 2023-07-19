@@ -33,7 +33,7 @@ class IWXBot:
                 "max_new_tokens", "use_4bit_quantization", "set_device_map", "mount_gdrive", "gdrive_mount_base_bath",
                 "device_map", "use_simple_llm_loader", "embedding_class", "model_name", "is_gptq_model",
                 "custom_quantization_config", "use_safetensors", "use_triton", "set_torch_dtype", "torch_dtype",
-                "api_prompt_template", "doc_prompt_template", "code_prompt_template"]
+                "api_prompt_template", "doc_prompt_template", "code_prompt_template", "model_basename"]
 
     model_id = constants.DEFAULT_MODEL_NAME
     docs_base_path = constants.DOCS_BASE_PATH
@@ -60,6 +60,7 @@ class IWXBot:
     code_prompt_template = constants.DEFAULT_PROMPT_FOR_CODE
     summary_prompt_template = constants.DEFAULT_PROMPT_FOR_SUMMARY
     api_help_prompt_template = constants.DEFAULT_PROMPT_FOR_API_HELP
+    model_basename = None
 
     def __getitem__(self, item):
         return item
@@ -120,7 +121,8 @@ class IWXBot:
                                             custom_quantiztion_config=self.custom_quantization_config,
                                             use_triton=self.use_triton,
                                             use_safetensors=self.use_safetensors, set_torch_dtype=self.set_torch_dtype,
-                                            torch_dtype=self.torch_dtype)
+                                            torch_dtype=self.torch_dtype,
+                                            model_basename=self.model_basename)
         print("Loaded all prompts")
         print("Init complete")
         pass
