@@ -218,7 +218,7 @@ class IWXBot:
                     chain = ConversationalRetrievalChain.from_llm(self.llm_model,
                                                                   retriever=self.api_iwx_retriever,
                                                                   combine_docs_chain_kwargs={"prompt": code_prompt})
-                elif answer_type == "Doc":
+                elif answer_type == "Docs":
                     chain = ConversationalRetrievalChain.from_llm(self.llm_model,
                                                                   retriever=self.doc_iwx_retriever,
                                                                   combine_docs_chain_kwargs={"prompt": doc_prompt})
