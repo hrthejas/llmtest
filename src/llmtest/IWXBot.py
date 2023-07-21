@@ -328,12 +328,12 @@ class IWXBot:
 
         if record_feedback:
             interface = gr.Interface(fn=chatbot, inputs=[choice, msg], outputs=output_textbox,
-                                     theme="darkhuggingface",
+                                     theme="nota-ai/theme",
                                      title="IWX CHATBOT", allow_flagging="manual", flagging_callback=MysqlLogger(),
                                      flagging_options=data)
         else:
             interface = gr.Interface(fn=chatbot, inputs=[choice, msg], outputs=output_textbox,
-                                     theme="darkhuggingface",
+                                     theme="nota-ai/theme",
                                      title="IWX CHATBOT", allow_flagging="never")
         if use_queue:
             interface.queue().launch(debug=debug, share=share_ui)
