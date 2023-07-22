@@ -100,19 +100,19 @@ class IWXBot:
         self.api_iwx_retriever.initialise(self.api_vector_stores)
 
         self.api_prompt = PromptTemplate(template=self.api_prompt_template,
-                                         input_variables=["context", "question", "base_url"])
+                                         input_variables=["context", "question"])
 
         self.doc_prompt = PromptTemplate(template=self.doc_prompt_template,
-                                         input_variables=["context", "question", "base_url"])
+                                         input_variables=["context", "question"])
 
         self.code_prompt = PromptTemplate(template=self.code_prompt_template,
                                           input_variables=["context", "question", "base_url"])
 
         self.summary_prompt = PromptTemplate(template=self.summary_prompt_template,
-                                             input_variables=["context", "question", "base_url"])
+                                             input_variables=["context", "question"])
 
         self.api_help_prompt = PromptTemplate(template=self.api_help_prompt_template,
-                                              input_variables=["context", "question", "base_url"])
+                                              input_variables=["context", "question"])
 
         self.llm_model = llmloader.load_llm(self.model_id, use_4bit_quantization=self.use_4bit_quantization,
                                             set_device_map=self.set_device_map,
@@ -248,19 +248,19 @@ class IWXBot:
                         new_chat=False):
 
         api_prompt = PromptTemplate(template=api_prompt_template,
-                                    input_variables=["context", "question", "base_url"])
+                                    input_variables=["context", "question"])
 
         doc_prompt = PromptTemplate(template=doc_prompt_template,
-                                    input_variables=["context", "question", "base_url"])
+                                    input_variables=["context", "question"])
 
         code_prompt = PromptTemplate(template=code_prompt_template,
                                      input_variables=["context", "question", "base_url"])
 
         summary_prompt = PromptTemplate(template=summary_prompt_template,
-                                        input_variables=["context", "question", "base_url"])
+                                        input_variables=["context", "question"])
 
         api_help_prompt = PromptTemplate(template=api_help_prompt_template,
-                                         input_variables=["context", "question", "base_url"])
+                                         input_variables=["context", "question"])
 
         return self.ask_with_memory(answer_type, query, similarity_search_k, api_prompt, doc_prompt, code_prompt,
                                     summary_prompt, api_help_prompt, new_chat)
