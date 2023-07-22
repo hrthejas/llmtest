@@ -389,3 +389,271 @@
 #         interface.queue().launch(debug=debug, share=share_chat_ui)
 #     else:
 #         interface.launch(debug=debug, share=share_chat_ui)
+
+
+# def ask(self, answer_type, query, similarity_search_k=4, api_prompt=None,
+#         doc_prompt=None, code_prompt=None, summary_prompt=None):
+#     if api_prompt is None:
+#         api_prompt = self.api_prompt
+#     if doc_prompt is None:
+#         doc_prompt = self.doc_prompt
+#     if code_prompt is None:
+#         code_prompt = self.code_prompt
+#     if summary_prompt is None:
+#         summary_prompt = self.summary_prompt
+#
+#     reference_docs = ""
+#     if self.llm_model is not None:
+#         search_results = None
+#         local_qa_chain = None
+#         if answer_type == "API" or answer_type == "Code":
+#             for api_vector_store in self.api_vector_stores:
+#                 if search_results is None:
+#                     search_results = api_vector_store.similarity_search(query, k=similarity_search_k)
+#                 else:
+#                     search_results = search_results + api_vector_store.similarity_search(query,
+#                                                                                          k=similarity_search_k)
+#             if answer_type == "API":
+#                 local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=api_prompt)
+#             else:
+#                 local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=code_prompt)
+#         elif answer_type == "Summary":
+#             search_results = ingest.get_doc_from_text(query)
+#             local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=summary_prompt)
+#         else:
+#             for doc_vector_store in self.doc_vector_stores:
+#                 if search_results is None:
+#                     search_results = doc_vector_store.similarity_search(query, k=similarity_search_k)
+#                 else:
+#                     search_results = search_results + doc_vector_store.similarity_search(queryk=similarity_search_k)
+#             local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=doc_prompt)
+#
+#         if local_qa_chain is not None and search_results is not None:
+#             result = local_qa_chain(
+#                 {"input_documents": search_results, "question": query, "base_url": self.iwx_base_url})
+#             bot_message = result["output_text"]
+#             for doc in search_results:
+#                 reference_docs = reference_docs + '\n' + str(doc.metadata.get('source'))
+#         else:
+#             bot_message = "No matching docs found on the vector store"
+#     else:
+#         bot_message = "Seams like iwxchat model is not loaded or not requested to give answer"
+#
+#     print(bot_message)
+#     print(reference_docs)
+#     return bot_message, reference_docs
+
+# DEFAULT_PROMPT_FOR_API_2 = """Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
+#
+# You are a REST API assistant working at Infoworks, but you are also an expert programmer.
+# You are to complete the user request by composing a series of commands.
+# Use the minimum number of commands required.
+#
+# The commands you have available are:
+# | Command | Arguments | Description | Output Format |
+# | --- | --- | --- | --- |
+# | message | message | Send the user a message | null |
+# | input | question | Ask the user for an input | null |
+# | execute | APIRequest | execute an Infoworks v3 REST API request | null |
+#
+# always use the above mentioned commands and output json as shown in examples below, dont add anything extra to the answer.
+#
+# Example 1:
+# [
+#   {{
+#     "command": "execute",
+#     "arguments": {{
+#       "type": "GET",
+#       "url": "http://10.37.0.7:3001/v3/sources",
+#       "headers": {{
+#         "Content-Type": "application/json",
+#         "Authorization": "Bearer {{refresh_token}}"
+#       }},
+#       "body": ""
+#     }}
+#   }}
+# ]
+#
+# Example 2:
+# Request: List all teradata sources
+# Response:
+# [
+#   {{
+#     "command": "execute",
+#     "arguments": {{
+#       "type": "GET",
+#       "url": "{base_url}/v3/sources",
+#       "headers": {{
+#         "Content-Type": "application/json",
+#         "Authorization": "Bearer {{refresh_token}}"
+#       }},
+#       "body": ""
+#     }}
+#   }}
+# ]
+#
+# Example 3:
+# User Request: create a teradata source with source name \"Teradata_sales\"
+# Response:
+# [
+#   {{
+#     "command": "input",
+#     "arguments" : "Enter the source name"
+#   }},
+#   {{
+#     "command": "input",
+#     "arguments" : "Enter the source type"
+#   }},
+#   {{
+#     "command": "input",
+#     "arguments" : "Enter the source sub type"
+#   }},
+#   {{
+#     "command": "input",
+#     "arguments" : "Enter the data lake path"
+#   }},
+#   {{
+#     "command": "input",
+#     "arguments" : "Enter the environment id"
+#   }},
+#   {{
+#     "command": "input",
+#     "arguments" : "Enter the storage id"
+#   }},
+#   {{
+#     "command": "input",
+#     "arguments" : "Enter the data lake schema"
+#   }},
+#   {{
+#     "command": "input",
+#     "arguments" : "Enter the is_oem_connector"
+#   }},
+#   {{
+#     "command": "execute",
+#     "arguments": {{
+#       "type": "POST"
+#       "url": "{base_url}/api/v3/sources",
+#       "headers": "{{\"Content-Type\": \"application/json\", \"Authorization\": \"Bearer {{refresh_token}}\"}}",
+#       "body": {{
+#         "name": "{{{{input_0}}}}",
+#         "environment_id": "{{{{input_4}}}}",
+#         "storage_id": "{{{{input_5}}",
+#         "data_lake_schema": "{{{{input_6}}}}"
+#         "data_lake_path": "{{{{input_3}}}}",
+#         "type": "{{{{input_1}}}}",
+#         "sub_type": "{{{{input_2}}}}",
+#         "is_oem_connector": "{{{{input_7}}}}"
+#       }}
+#     }}
+#   }}
+# ]
+#
+# {context}
+#
+# IMPORTANT - Output the commands in JSON as an abstract syntax tree. Do not respond with any text that isn't part of a command.
+# IMPORTANT - Do not explain yourself or Do not give Any Explanation
+# IMPORTANT - You are an expert at generating commands and You can only generate commands.
+# IMPORTANT - Do not assume any values of put or post or patch requests. always get the input from user any params.
+# IMPORTANT - Infoworks is running on {base_url}
+# IMPORTANT - Authenticate all execute commands using refresh_token assume user already has that information
+#
+# Understand the following request and generate the minimum set of commands as shown in examples above to complete it.
+#
+# Question: {question}
+# """
+#
+#
+# DEFAULT_PROMPT_FOR_API_3 = """Below is an instruction that describes a task. write a response that appropriately completes the request.
+#
+# ###INSTRUCTION:
+#
+# You are a REST API assistant working at Infoworks, but you are also an expert programmer.
+# You are to complete the user request by composing a series of commands.
+# Use the minimum number of commands required.
+#
+# IMPORTANT - Strictly follow below conditions while generating output.
+# 1. Look for any value for the query or body parameters in the prompt before generating commands.
+# 2. From the context provided below 'Request parameter' will give pipe delimited body parameters use that for Input Command.
+# 3. From the context provided below 'Query parameter' will give pipe delimited query parameters use that for Input Command.
+# 4. From the context provided below 'Method' will give you api call method GET/POST/PATCH.
+# 5. For every POST and PATCH request ask user input for body parameters.
+#
+#
+# IMPORTANT - The commands you have available are:
+#
+# | Command | Arguments  | Description                              |
+# | ------- | ---------  | ---------------------------------------- |
+# | Input   | question   | Ask input from user                      |
+# | execute | APIRequest | execute an Infoworks v3 REST API request |
+#
+# IMPORTANT - Use these commands to Output the commands in JSON as an abstract syntax tree in one of the below format depending on <Method>:
+#
+# [
+#   //Ask this for every parameter
+#   {{
+#     "command": "input",
+#     "arguments": "Enter source id:"
+#   }},
+#   {{
+#     "command": "input",
+#     "arguments": "Enter table id:"
+#   }},
+#   {{
+#     "command": "input",
+#     "arguments": "Enter tags to add separated by comma (,):"
+#   }},
+#   {{
+#     "command": "input",
+#     "arguments": "Enter tags to remove separated by comma (,):"
+#   }},
+#   {{
+#     "command": "input",
+#     "arguments": "Enter is favorite (true/false):"
+#   }},
+#   {{
+#     "command": "input",
+#     "arguments": "Enter description:"
+#   }},
+#   {{
+#     "command": "execute",
+#     "arguments": {{
+#       "type": "PUT",
+#       "url": "{base_url}/v3/<path>",
+#       "headers": {{
+#         "Content-Type": "application/json",
+#         "Authorization": "Bearer {{refresh_token}}"
+#       }},
+#       "body": {{
+#         "tags_to_add": "{{{{input_2}}}}",
+#         "tags_to_remove": "{{{{input_3}}}}",
+#         "is_favorite": "{{{{input_4}}}}",
+#         "description": "{{{{input_5}}}}"
+#       }}
+#     }}
+#   }}
+# ]
+#
+#
+# IMPORTANT - Only use the above mentioned commands and output commands in JSON as an abstract syntax tree as shown in examples below.
+# IMPORTANT - Do not respond with any text that isn't part of a command.
+# IMPORTANT - Do not give Any kind of Explanation for your answer.
+# IMPORTANT - You are an expert at generating commands and You can only generate commands.
+# IMPORTANT - Do not assume any values of put or post or patch requests. always get the input from user any params.
+# IMPORTANT - Infoworks is running on {base_url}.
+# IMPORTANT - Authenticate all execute commands using refresh_token assume user already has that information.
+#
+#
+# ###CONTEXT:
+# {context}
+#
+#
+# Question: {question}
+#
+# ###RESPONSE:
+# """
+#
+# DEFAULT_PROMPT_FOR_SUMMARY_NEW = """Below is an instruction that describes a task. write a response that appropriately completes the request.
+# Infoworks is running on {base_url}
+# {question}
+# {context}
+# """
