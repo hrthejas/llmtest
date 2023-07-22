@@ -33,7 +33,7 @@ class IWXBot:
                 "max_new_tokens", "use_4bit_quantization", "set_device_map", "mount_gdrive", "gdrive_mount_base_bath",
                 "device_map", "use_simple_llm_loader", "embedding_class", "model_name", "is_gptq_model",
                 "custom_quantization_config", "use_safetensors", "use_triton", "set_torch_dtype", "torch_dtype",
-                "api_prompt_template", "doc_prompt_template", "code_prompt_template", "model_basename"]
+                "api_prompt_template", "doc_prompt_template", "code_prompt_template", "model_basename", "iwx_base_url"]
 
     model_id = constants.DEFAULT_MODEL_NAME
     docs_base_path = constants.DOCS_BASE_PATH
@@ -61,6 +61,7 @@ class IWXBot:
     summary_prompt_template = constants.DEFAULT_PROMPT_FOR_SUMMARY
     api_help_prompt_template = constants.DEFAULT_PROMPT_FOR_API_HELP
     model_basename = None
+    iwx_base_url = 'http://10.37.0.7:3000'
 
     def __getitem__(self, item):
         return item
@@ -99,19 +100,19 @@ class IWXBot:
         self.api_iwx_retriever.initialise(self.api_vector_stores)
 
         self.api_prompt = PromptTemplate(template=self.api_prompt_template,
-                                         input_variables=["context", "question"])
+                                         input_variables=["context", "question", "base_url"])
 
         self.doc_prompt = PromptTemplate(template=self.doc_prompt_template,
-                                         input_variables=["context", "question"])
+                                         input_variables=["context", "question", "base_url"])
 
         self.code_prompt = PromptTemplate(template=self.code_prompt_template,
-                                          input_variables=["context", "question"])
+                                          input_variables=["context", "question", "base_url"])
 
         self.summary_prompt = PromptTemplate(template=self.summary_prompt_template,
-                                             input_variables=["context", "question"])
+                                             input_variables=["context", "question", "base_url"])
 
         self.api_help_prompt = PromptTemplate(template=self.api_help_prompt_template,
-                                              input_variables=["context", "question"])
+                                              input_variables=["context", "question", "base_url"])
 
         self.llm_model = llmloader.load_llm(self.model_id, use_4bit_quantization=self.use_4bit_quantization,
                                             set_device_map=self.set_device_map,
@@ -166,7 +167,7 @@ class IWXBot:
                 local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=doc_prompt)
 
             if local_qa_chain is not None and search_results is not None:
-                result = local_qa_chain({"input_documents": search_results, "question": query})
+                result = local_qa_chain({"input_documents": search_results, "question": query, "base_url":self.iwx_base_url})
                 bot_message = result["output_text"]
                 for doc in search_results:
                     reference_docs = reference_docs + '\n' + str(doc.metadata.get('source'))
@@ -228,7 +229,7 @@ class IWXBot:
                     raise Exception("Unknown Answer Type")
             if chain is not None:
                 print(self.chat_history)
-                result = chain({"question": query, "chat_history": self.chat_history})
+                result = chain({"question": query, "chat_history": self.chat_history, "base_url": self.iwx_base_url})
                 bot_message = result['answer']
             else:
                 bot_message = "Chain is none"
@@ -247,19 +248,19 @@ class IWXBot:
                         new_chat=False):
 
         api_prompt = PromptTemplate(template=api_prompt_template,
-                                    input_variables=["context", "question"])
+                                    input_variables=["context", "question", "base_url"])
 
         doc_prompt = PromptTemplate(template=doc_prompt_template,
-                                    input_variables=["context", "question"])
+                                    input_variables=["context", "question", "base_url"])
 
         code_prompt = PromptTemplate(template=code_prompt_template,
-                                     input_variables=["context", "question"])
+                                     input_variables=["context", "question", "base_url"])
 
         summary_prompt = PromptTemplate(template=summary_prompt_template,
-                                        input_variables=["context", "question"])
+                                        input_variables=["context", "question", "base_url"])
 
         api_help_prompt = PromptTemplate(template=api_help_prompt_template,
-                                         input_variables=["context", "question"])
+                                         input_variables=["context", "question", "base_url"])
 
         return self.ask_with_memory(answer_type, query, similarity_search_k, api_prompt, doc_prompt, code_prompt,
                                     summary_prompt, api_help_prompt, new_chat)
