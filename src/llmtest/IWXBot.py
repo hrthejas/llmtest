@@ -8,10 +8,13 @@ from langchain.memory import ConversationBufferMemory
 from langchain.embeddings import (
     HuggingFaceInstructEmbeddings
 )
+from langchain.chat_models import ChatOpenAI
 
 from llmtest.IWXRetriever import IWXRetriever
 from llmtest.MysqlLogger import MysqlLogger
 from langchain.chains import LLMChain
+import os
+from getpass import getpass
 
 
 class IWXBot:
@@ -23,6 +26,7 @@ class IWXBot:
     summary_prompt = None
     api_help_prompt = None
     llm_model = None
+    summary_llm_model = None
     vector_embeddings = None
     api_iwx_retriever = None
     doc_iwx_retriever = None
@@ -77,6 +81,8 @@ class IWXBot:
         if self.mount_gdrive:
             ingest.mountGoogleDrive(self.gdrive_mount_base_bath)
 
+        os.environ["OPENAI_API_KEY"] = getpass("Paste your OpenAI API key here and hit enter:")
+
         pass
 
     def initialize_chat(self):
@@ -114,6 +120,8 @@ class IWXBot:
         self.api_help_prompt = PromptTemplate(template=self.api_help_prompt_template,
                                               input_variables=["context", "question", "base_url"])
 
+        print("Loaded all prompts")
+
         self.llm_model = llmloader.load_llm(self.model_id, use_4bit_quantization=self.use_4bit_quantization,
                                             set_device_map=self.set_device_map,
                                             max_new_tokens=self.max_new_tokens, device_map=self.device_map,
@@ -124,7 +132,10 @@ class IWXBot:
                                             use_safetensors=self.use_safetensors, set_torch_dtype=self.set_torch_dtype,
                                             torch_dtype=self.torch_dtype,
                                             model_basename=self.model_basename)
-        print("Loaded all prompts")
+        print("Loaded base LLM")
+        self.summary_llm_model = ChatOpenAI(model_name=constants.OPEN_AI_MODEL_NAME, temperature=constants.OPEN_AI_TEMP,
+                                            max_tokens=self.max_new_tokens)
+        print("Loaded Summary LLM")
         print("Init complete")
         pass
 
@@ -153,7 +164,7 @@ class IWXBot:
             chain = None
             if answer_type == "Summary":
                 search_results = ingest.get_doc_from_text(query)
-                local_qa_chain = load_qa_chain(llm=self.llm_model, chain_type="stuff", prompt=summary_prompt)
+                local_qa_chain = load_qa_chain(llm=self.summary_llm_model, chain_type="stuff", prompt=summary_prompt)
                 result = local_qa_chain({"input_documents": search_results, "question": query})
                 bot_message = result["output_text"]
             else:
@@ -175,12 +186,13 @@ class IWXBot:
                                                                   combine_docs_chain_kwargs={"prompt": doc_prompt})
                 else:
                     raise Exception("Unknown Answer Type")
-            if chain is not None:
-                print(self.chat_history)
-                result = chain({"question": query, "chat_history": self.chat_history, "base_url": self.iwx_base_url})
-                bot_message = result['answer']
-            else:
-                bot_message = "Chain is none"
+
+                if chain is not None:
+                    print(self.chat_history)
+                    result = chain({"question": query, "chat_history": self.chat_history, "base_url": self.iwx_base_url})
+                    bot_message = result['answer']
+                else:
+                    bot_message = "Chain is none"
         else:
             bot_message = "Seams like iwxchat model is not loaded or not requested to give answer"
         print(bot_message)
@@ -214,7 +226,7 @@ class IWXBot:
                                     summary_prompt, api_help_prompt, new_chat)
 
     def start_iwx_chat(self, debug=True, use_queue=False, share_ui=True, similarity_search_k=2, record_feedback=False,
-                       add_summary_answer_type=False, api_prompt_template=constants.API_QUESTION_PROMPT,
+                       add_summary_answer_type=True, api_prompt_template=constants.API_QUESTION_PROMPT,
                        doc_prompt_template=constants.DOC_QUESTION_PROMPT,
                        code_prompt_template=constants.DEFAULT_PROMPT_FOR_CODE,
                        summary_prompt_template=constants.DEFAULT_PROMPT_FOR_SUMMARY):
