@@ -16,6 +16,8 @@ from langchain.chains import LLMChain
 import os
 from getpass import getpass
 from langchain.chains import RetrievalQA
+from langchain.chains.conversation.base import ConversationChain
+from langchain.text_splitter import CharacterTextSplitter
 
 
 class IWXBot:
@@ -170,9 +172,15 @@ class IWXBot:
                     {"input_documents": search_results, "question": query, "base_url": self.iwx_base_url})
                 bot_message = result["output_text"]
             elif answer_type == "General":
-                gen_chain = RetrievalQA.from_chain_type(llm=self.summary_llm_model, chain_type="stuff")
-                result = gen_chain(query)
-                bot_message = result['result']
+                splitter = CharacterTextSplitter(chunk_size=512)
+                retriever = RetrievalQA(llm=self.summary_llm_model, splitter=splitter, top_k=1)
+                # Initialize the conversation chain
+                conversation_chain = ConversationChain(llm=self.summary_llm_model, retriever=retriever)
+                response = conversation_chain(query)
+                #
+                # gen_chain = RetrievalQA.from_chain_type(llm=self.summary_llm_model, chain_type="stuff")
+                # result = gen_chain(query)
+                bot_message = response
             else:
                 if answer_type == "API":
                     chain = ConversationalRetrievalChain.from_llm(self.llm_model,
