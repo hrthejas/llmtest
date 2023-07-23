@@ -15,6 +15,7 @@ from llmtest.MysqlLogger import MysqlLogger
 from langchain.chains import LLMChain
 import os
 from getpass import getpass
+from langchain.chains import RetrievalQA
 
 
 class IWXBot:
@@ -165,8 +166,13 @@ class IWXBot:
             if answer_type == "Summary":
                 search_results = ingest.get_doc_from_text(query)
                 local_qa_chain = load_qa_chain(llm=self.summary_llm_model, chain_type="stuff", prompt=summary_prompt)
-                result = local_qa_chain({"input_documents": search_results, "question": query})
+                result = local_qa_chain(
+                    {"input_documents": search_results, "question": query, "base_url": self.iwx_base_url})
                 bot_message = result["output_text"]
+            elif answer_type == "General":
+                gen_chain = RetrievalQA.from_chain_type(llm=self.summary_llm_model, chain_type="stuff")
+                result = gen_chain(query)
+                bot_message = result['result']
             else:
                 if answer_type == "API":
                     chain = ConversationalRetrievalChain.from_llm(self.llm_model,
@@ -189,7 +195,8 @@ class IWXBot:
 
                 if chain is not None:
                     print(self.chat_history)
-                    result = chain({"question": query, "chat_history": self.chat_history, "base_url": self.iwx_base_url})
+                    result = chain(
+                        {"question": query, "chat_history": self.chat_history, "base_url": self.iwx_base_url})
                     bot_message = result['answer']
                 else:
                     bot_message = "Chain is none"

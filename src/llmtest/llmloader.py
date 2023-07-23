@@ -39,7 +39,6 @@ def get_llm(model_id,
                                    use_triton, pass_device_map, set_torch_dtype, torch_dtype, model_basename)
     pipeline = pipeline_loader.get_pipeline(model, task, tokenizer, max_new_tokens, additional_pipeline_args)
 
-    AutoModelForCausalLM.from_pretrained()
     return HuggingFacePipeline(pipeline=pipeline)
 
 
