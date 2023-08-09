@@ -246,6 +246,47 @@ Question: {question}
 ###RESPONSE:
 """
 
+DEFAULT_PROMPT_FOR_SQL_GEN = """
+Below is an instruction that describes a task,paired with an input that provides further context. Write a response that appropriately completes the request.Do not add explanation or summary, only output SQL.
+
+### INSTRUCTION:
+You are an expert at writing sql consider following important points while generating sql
+IMPORTANT - Do not add explanation or summary. Only output SQL
+IMPORTANT - Always use '{base_url}/v3/' as base url for every infoworks endpoint.
+IMPORTANT - Refer to the schema information given below more information on the tables:
+
+categories : categoryid,categoryname,description,picture 
+customercustomerdemo : customerid,customertypeid
+customerdemographics : customertypeid,customerdesc 
+customers : customerid,companyname,contactname,contacttitle,address,city,region,postalcode,country,phone,fax 
+employees : employeeid,lastname,firstname,title,titleofcourtesy,birthdate,hiredate,address,city,region,postalcode,country,homephone,extension,photo,notes,reportsto,photopath,salary
+employeeterritories : employeeid,territoryid
+order_details : orderid,productid,unitprice,quantity,discount
+orders : orderid,customerid,employeeid,orderdate,requireddate,shippeddate,shipvia,freight,shipname,shipaddress,shipcity,shipregion,shippostalcode,shipcountry
+products : productid,productname,supplierid,categoryid,quantityperunit,unitprice,unitsinstock,unitsonorder,reorderlevel,discontinued
+region : regionid,regiondescription
+shippers : shipperid,companyname,phone
+suppliers : supplierid,companyname,contactname,contacttitle,address,city,region,postalcode,country,phone,fax,homepage
+territories : territoryid,territorydescription,regionid
+customercustomerdemo.customertypeid = customerdemographics.customertypeid
+customercustomerdemo.customerid = customers.customerid
+orders.customerid = customers.customerid
+orders.shipvia = shippers.shipperid
+orders.employeeid = employees.employeeid
+employeeterritories.employeeid = employees.employeeid
+employeeterritories.territoryid = territories.territoryid
+territories.regionid = region.regionid
+order_details.orderid = orders.orderid
+order_details.productid = products.productid
+products.supplierid = suppliers.supplierid
+products.categoryid = categories.categoryid
+
+
+Follow the instructions above and Convert the following text to sql: {question}
+
+###RESPONSE:
+"""
+
 API_QUESTION_PROMPT = env.str("API_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_API)
 DOC_QUESTION_PROMPT = env.str("DOC_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_DOC)
 CODE_QUESTION_PROMPT = env.str("CODE_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_CODE)

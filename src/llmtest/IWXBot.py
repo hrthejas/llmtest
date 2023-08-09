@@ -27,6 +27,7 @@ class IWXBot:
     doc_prompt = None
     code_prompt = None
     summary_prompt = None
+    sql_gen_prompt = None
     api_help_prompt = None
     llm_model = None
     summary_llm_model = None
@@ -67,6 +68,7 @@ class IWXBot:
     code_prompt_template = constants.DEFAULT_PROMPT_FOR_CODE
     summary_prompt_template = constants.DEFAULT_PROMPT_FOR_SUMMARY
     api_help_prompt_template = constants.DEFAULT_PROMPT_FOR_API_HELP
+    sql_gen_prompt_template = constants.DEFAULT_PROMPT_FOR_SQL_GEN
     model_basename = None
     iwx_base_url = 'http://10.37.0.7:3000'
 
@@ -123,6 +125,8 @@ class IWXBot:
         self.api_help_prompt = PromptTemplate(template=self.api_help_prompt_template,
                                               input_variables=["context", "question", "base_url"])
 
+        self.sql_gen_prompt = PromptTemplate(template=self.sql_gen_prompt_template, input_variables=["question"])
+
         print("Loaded all prompts")
 
         self.llm_model = llmloader.load_llm(self.model_id, use_4bit_quantization=self.use_4bit_quantization,
@@ -144,6 +148,7 @@ class IWXBot:
 
     def ask_with_memory(self, answer_type, query, similarity_search_k=2, api_prompt=None,
                         doc_prompt=None, code_prompt=None, summary_prompt=None, api_help_prompt=None,
+                        sql_gen_prompt=None,
                         new_chat=False):
 
         self.api_iwx_retriever.set_search_k(similarity_search_k)
@@ -162,6 +167,8 @@ class IWXBot:
             summary_prompt = self.summary_prompt
         if api_help_prompt is None:
             api_help_prompt = self.api_help_prompt
+        if sql_gen_prompt is None:
+            sql_gen_prompt = self.sql_gen_prompt
 
         if self.llm_model is not None:
             chain = None
@@ -199,6 +206,10 @@ class IWXBot:
                     chain = ConversationalRetrievalChain.from_llm(self.llm_model,
                                                                   retriever=self.doc_iwx_retriever,
                                                                   combine_docs_chain_kwargs={"prompt": doc_prompt})
+                elif answer_type == "SQL":
+                    chain = ConversationalRetrievalChain.from_llm(self.llm_model,
+                                                                  retriever=self.doc_iwx_retriever,
+                                                                  combine_docs_chain_kwargs={"prompt": sql_gen_prompt})
                 else:
                     raise Exception("Unknown Answer Type")
 
@@ -221,6 +232,7 @@ class IWXBot:
                         code_prompt_template=code_prompt_template,
                         summary_prompt_template=summary_prompt_template,
                         api_help_prompt_template=api_help_prompt_template,
+                        sql_gen_prompt_template=sql_gen_prompt_template,
                         new_chat=False):
 
         api_prompt = PromptTemplate(template=api_prompt_template,
@@ -238,8 +250,11 @@ class IWXBot:
         api_help_prompt = PromptTemplate(template=api_help_prompt_template,
                                          input_variables=["context", "question", "base_url"])
 
+        sql_gen_prompt = PromptTemplate(template=sql_gen_prompt_template,
+                                        input_variables=["question"])
+
         return self.ask_with_memory(answer_type, query, similarity_search_k, api_prompt, doc_prompt, code_prompt,
-                                    summary_prompt, api_help_prompt, new_chat)
+                                    summary_prompt, api_help_prompt, sql_gen_prompt, new_chat)
 
     def start_iwx_chat(self, debug=True, use_queue=False, share_ui=True, similarity_search_k=2, record_feedback=False,
                        add_summary_answer_type=True, api_prompt_template=constants.API_QUESTION_PROMPT,
@@ -248,9 +263,9 @@ class IWXBot:
                        summary_prompt_template=constants.DEFAULT_PROMPT_FOR_SUMMARY):
 
         if add_summary_answer_type:
-            choices = ['API', 'Docs', 'Code', 'API HELP', 'Summary']
+            choices = ['SQL', 'API', 'Docs', 'Code', 'API HELP', 'Summary']
         else:
-            choices = ['API', 'Docs', 'Code', 'API HELP']
+            choices = ['SQL', 'API', 'Docs', 'Code', 'API HELP']
         data = [('Bad', '1'), ('Ok', '2'), ('Good', '3'), ('Very Good', '4'), ('Perfect', '5')]
 
         def chatbot(choice_selected, message):
