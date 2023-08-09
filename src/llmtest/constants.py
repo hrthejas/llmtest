@@ -252,7 +252,6 @@ Below is an instruction that describes a task,paired with an input that provides
 ### INSTRUCTION:
 You are an expert at writing sql consider following important points while generating sql
 IMPORTANT - Do not add explanation or summary. Only output SQL
-IMPORTANT - Always use '{base_url}/v3/' as base url for every infoworks endpoint.
 IMPORTANT - Refer to the schema information given below more information on the tables:
 
 categories : categoryid,categoryname,description,picture 
@@ -282,7 +281,7 @@ products.supplierid = suppliers.supplierid
 products.categoryid = categories.categoryid
 
 
-Follow the instructions above and Convert the following text to sql: {question}
+Follow the instructions above and Convert the following text to sql: {user_text}
 
 ###RESPONSE:
 """

@@ -124,9 +124,6 @@ class IWXBot:
 
         self.api_help_prompt = PromptTemplate(template=self.api_help_prompt_template,
                                               input_variables=["context", "question", "base_url"])
-
-        self.sql_gen_prompt = PromptTemplate(template=self.sql_gen_prompt_template, input_variables=["question","base_url"])
-
         print("Loaded all prompts")
 
         self.llm_model = llmloader.load_llm(self.model_id, use_4bit_quantization=self.use_4bit_quantization,
@@ -168,7 +165,7 @@ class IWXBot:
         if api_help_prompt is None:
             api_help_prompt = self.api_help_prompt
         if sql_gen_prompt is None:
-            sql_gen_prompt = self.sql_gen_prompt
+            sql_gen_prompt = constants.DEFAULT_PROMPT_FOR_SQL_GEN
 
         if self.llm_model is not None:
             chain = None
@@ -181,8 +178,9 @@ class IWXBot:
             elif answer_type == "General":
                 response = self.summary_llm_model.predict(query)
                 bot_message = response
-            elif answer_type == "SQL_GEN":
-                response = self.summary_llm_model.predict(query)
+            elif answer_type == "SQL":
+                prompt_with_query = sql_gen_prompt.format(user_text=query)
+                response = self.summary_llm_model.predict(prompt_with_query)
                 bot_message = response
             else:
                 if answer_type == "API":
@@ -201,10 +199,6 @@ class IWXBot:
                     chain = ConversationalRetrievalChain.from_llm(self.llm_model,
                                                                   retriever=self.doc_iwx_retriever,
                                                                   combine_docs_chain_kwargs={"prompt": doc_prompt})
-                elif answer_type == "SQL":
-                    chain = ConversationalRetrievalChain.from_llm(self.summary_llm_model,
-                                                                  retriever=self.doc_iwx_retriever,
-                                                                  combine_docs_chain_kwargs={"prompt": sql_gen_prompt})
                 else:
                     raise Exception("Unknown Answer Type")
 
@@ -245,11 +239,8 @@ class IWXBot:
         api_help_prompt = PromptTemplate(template=api_help_prompt_template,
                                          input_variables=["context", "question", "base_url"])
 
-        sql_gen_prompt = PromptTemplate(template=sql_gen_prompt_template,
-                                        input_variables=["question","base_url"])
-
         return self.ask_with_memory(answer_type, query, similarity_search_k, api_prompt, doc_prompt, code_prompt,
-                                    summary_prompt, api_help_prompt, sql_gen_prompt, new_chat)
+                                    summary_prompt, api_help_prompt, sql_gen_prompt_template, new_chat)
 
     def start_iwx_chat(self, debug=True, use_queue=False, share_ui=True, similarity_search_k=2, record_feedback=False,
                        add_summary_answer_type=True, api_prompt_template=constants.API_QUESTION_PROMPT,
