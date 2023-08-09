@@ -180,14 +180,9 @@ class IWXBot:
                 bot_message = result["output_text"]
             elif answer_type == "General":
                 response = self.summary_llm_model.predict(query)
-                # splitter = CharacterTextSplitter(chunk_size=512)
-                # retriever = RetrievalQA(llm=self.summary_llm_model, splitter=splitter, top_k=1)
-                # # Initialize the conversation chain
-                # conversation_chain = ConversationChain(llm=self.summary_llm_model, retriever=retriever)
-                # response = conversation_chain(query)
-                # #
-                # # gen_chain = RetrievalQA.from_chain_type(llm=self.summary_llm_model, chain_type="stuff")
-                # # result = gen_chain(query)
+                bot_message = response
+            elif answer_type == "SQL_GEN":
+                response = self.summary_llm_model.predict(query)
                 bot_message = response
             else:
                 if answer_type == "API":
@@ -207,7 +202,7 @@ class IWXBot:
                                                                   retriever=self.doc_iwx_retriever,
                                                                   combine_docs_chain_kwargs={"prompt": doc_prompt})
                 elif answer_type == "SQL":
-                    chain = ConversationalRetrievalChain.from_llm(self.llm_model,
+                    chain = ConversationalRetrievalChain.from_llm(self.summary_llm_model,
                                                                   retriever=self.doc_iwx_retriever,
                                                                   combine_docs_chain_kwargs={"prompt": sql_gen_prompt})
                 else:
