@@ -125,7 +125,7 @@ class IWXBot:
         self.api_help_prompt = PromptTemplate(template=self.api_help_prompt_template,
                                               input_variables=["context", "question", "base_url"])
 
-        self.sql_gen_prompt = PromptTemplate(template=self.sql_gen_prompt_template, input_variables=["question"])
+        self.sql_gen_prompt = PromptTemplate(template=self.sql_gen_prompt_template, input_variables=["question","base_url"])
 
         print("Loaded all prompts")
 
@@ -251,7 +251,7 @@ class IWXBot:
                                          input_variables=["context", "question", "base_url"])
 
         sql_gen_prompt = PromptTemplate(template=sql_gen_prompt_template,
-                                        input_variables=["question"])
+                                        input_variables=["question","base_url"])
 
         return self.ask_with_memory(answer_type, query, similarity_search_k, api_prompt, doc_prompt, code_prompt,
                                     summary_prompt, api_help_prompt, sql_gen_prompt, new_chat)
