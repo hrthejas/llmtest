@@ -252,7 +252,198 @@ Below is an instruction that describes a task,paired with an input that provides
 ### INSTRUCTION:
 You are an expert at writing sql consider following important points while generating sql
 IMPORTANT - Do not add explanation or summary. Only output SQL
+IMPORTANT - Refer to the schema information given below as create table statements for more information on the tables:
+IMPORTANT - Refer to the each column description given as column level comments:
+
+
+-- Table: CATEGORIES
+create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.CATEGORIES (
+	CATEGORYID NUMBER(38,0),               -- ID for each product category.
+	CATEGORYNAME VARCHAR(16777216),        -- Name of the product category.
+	DESCRIPTION VARCHAR(16777216),         -- Brief description of the category.
+	PICTURE BINARY(8388608),               -- Image representing the category.
+	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when category data was added.
+	ZIW_IS_DELETED BOOLEAN                 -- Indicates if category is deleted.
+);
+
+-- Table: CUSTOMERCUSTOMERDEMO
+create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.CUSTOMERCUSTOMERDEMO (
+	CUSTOMERID VARCHAR(16777216),          -- ID for each customer.
+	CUSTOMERTYPEID VARCHAR(16777216),      -- Type of customer.
+	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when customer data was added.
+	ZIW_IS_DELETED BOOLEAN                 -- Indicates if customer data is deleted.
+);
+
+-- Table: CUSTOMERDEMOGRAPHICS
+create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.CUSTOMERDEMOGRAPHICS (
+	CUSTOMERTYPEID VARCHAR(16777216),      -- Type of customer.
+	CUSTOMERDESC VARCHAR(16777216),        -- Description of customer type.
+	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when customer data was added.
+	ZIW_IS_DELETED BOOLEAN                 -- Indicates if customer data is deleted.
+);
+
+-- Table: CUSTOMERS
+create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.CUSTOMERS (
+	CUSTOMERID VARCHAR(16777216),          -- ID for each customer.
+	COMPANYNAME VARCHAR(16777216),         -- Company name of customer.
+	CONTACTNAME VARCHAR(16777216),         -- Name of primary contact.
+	CONTACTTITLE VARCHAR(16777216),        -- Role of primary contact.
+	ADDRESS VARCHAR(16777216),             -- Customer's street address.
+	CITY VARCHAR(16777216),                -- City where customer is located.
+	REGION VARCHAR(16777216),              -- Geographical region of customer.
+	POSTALCODE VARCHAR(16777216),          -- Postal code of customer's address.
+	COUNTRY VARCHAR(16777216),             -- Country where customer operates.
+	PHONE VARCHAR(16777216),               -- Contact phone number.
+	FAX VARCHAR(16777216),                 -- Contact fax number.
+	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when customer data was added.
+	ZIW_IS_DELETED BOOLEAN                 -- Indicates if customer data is deleted.
+);
+
+-- Table: EMPLOYEES
+create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.EMPLOYEES (
+	EMPLOYEEID NUMBER(38,0),               -- ID for each employee.
+	LASTNAME VARCHAR(16777216),            -- Employee's last name.
+	FIRSTNAME VARCHAR(16777216),           -- Employee's first name.
+	TITLE VARCHAR(16777216),               -- Employee's job title.
+	TITLEOFCOURTESY VARCHAR(16777216),     -- Polite form of address for the employee.
+	BIRTHDATE TIMESTAMP_NTZ(9),            -- Employee's birthdate.
+	HIREDATE TIMESTAMP_NTZ(9),             -- Date when employee was hired.
+	ADDRESS VARCHAR(16777216),             -- Employee's street address.
+	CITY VARCHAR(16777216),                -- City where employee lives.
+	REGION VARCHAR(16777216),              -- Larger region where employee resides.
+	POSTALCODE VARCHAR(16777216),          -- Postal code of employee's address.
+	COUNTRY VARCHAR(16777216),             -- Country where employee lives.
+	HOMEPHONE VARCHAR(16777216),           -- Employee's home phone number.
+	EXTENSION VARCHAR(16777216),           -- Phone extension for employee.
+	PHOTO BINARY(8388608),                 -- Photo of the employee.
+	NOTES VARCHAR(16777216),               -- Additional notes about employee.
+	REPORTSTO NUMBER(38,0),                -- ID of supervisor employee.
+	PHOTOPATH VARCHAR(16777216),           -- Path to employee's photo.
+	SALARY FLOAT,                          -- Employee's salary.
+	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when employee data was added.
+	ZIW_IS_DELETED BOOLEAN                 -- Indicates if employee data is deleted.
+);
+
+-- Table: EMPLOYEETERRITORIES
+create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.EMPLOYEETERRITORIES (
+	EMPLOYEEID NUMBER(38,0),               -- ID of employee.
+	TERRITORYID VARCHAR(16777216),         -- ID of territory assigned to employee.
+	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when data was added.
+	ZIW_IS_DELETED BOOLEAN                 -- Indicates if data is deleted.
+);
+
+-- Table: ORDERS
+create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.ORDERS (
+	ORDERID NUMBER(38,0),                   -- Unique identifier for each order.
+	CUSTOMERID VARCHAR(16777216),           -- Identifier of the customer.
+	EMPLOYEEID NUMBER(38,0),                -- Identifier of the employee who took the order.
+	ORDERDATE TIMESTAMP_NTZ(9),             -- Date when the order was placed.
+	REQUIREDDATE TIMESTAMP_NTZ(9),          -- Date when the order is needed.
+	SHIPPEDDATE TIMESTAMP_NTZ(9),           -- Date when the order was shipped.
+	SHIPVIA NUMBER(38,0),                   -- Identifier of the shipping company.
+	FREIGHT NUMBER(10,4),                   -- Cost of shipping.
+	SHIPNAME VARCHAR(16777216),             -- Name of the recipient.
+	SHIPADDRESS VARCHAR(16777216),          -- Shipping address.
+	SHIPCITY VARCHAR(16777216),             -- Shipping city.
+	SHIPREGION VARCHAR(16777216),           -- Shipping region.
+	SHIPPOSTALCODE VARCHAR(16777216),       -- Shipping postal code.
+	SHIPCOUNTRY VARCHAR(16777216),          -- Shipping country.
+	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when data was added.
+	ZIW_IS_DELETED BOOLEAN                 -- Indicates if data is deleted.
+);
+
+-- Table: ORDER_DETAILS
+create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.ORDER_DETAILS (
+	ORDERID NUMBER(38,0),                   -- Identifier for the order.
+	PRODUCTID NUMBER(38,0),                 -- Identifier for the product in the order.
+	UNITPRICE NUMBER(10,4),                 -- Price per unit of the product.
+	QUANTITY NUMBER(38,0),                  -- Number of units ordered.
+	DISCOUNT FLOAT,                         -- Discount applied to the product.
+	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when data was added.
+	ZIW_IS_DELETED BOOLEAN                 -- Indicates if data is deleted.
+);
+
+-- Table: PRODUCTS
+create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.PRODUCTS (
+	PRODUCTID NUMBER(38,0),                 -- Identifier for each product.
+	PRODUCTNAME VARCHAR(16777216),          -- Name of the product.
+	SUPPLIERID NUMBER(38,0),                -- Identifier of the supplier.
+	CATEGORYID NUMBER(38,0),                -- Identifier of the category the product belongs to.
+	QUANTITYPERUNIT VARCHAR(16777216),      -- Quantity and measurement description per unit.
+	UNITPRICE NUMBER(10,4),                 -- Price per unit of the product.
+	UNITSINSTOCK NUMBER(38,0),              -- Number of units currently in stock.
+	UNITSONORDER NUMBER(38,0),              -- Number of units on order.
+	REORDERLEVEL NUMBER(38,0),              -- Minimum number of units to trigger a reorder.
+	DISCONTINUED BOOLEAN,                   -- Indicates if the product is no longer available.
+	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when data was added.
+	ZIW_IS_DELETED BOOLEAN                 -- Indicates if product data is deleted.
+);
+
+-- Table: REGION
+create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.REGION (
+	REGIONID NUMBER(38,0),                  -- Identifier for each geographical region.
+	REGIONDESCRIPTION VARCHAR(16777216),    -- Description of the region.
+	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when data was added.
+	ZIW_IS_DELETED BOOLEAN                 -- Indicates if data is deleted.
+);
+
+-- Table: SHIPPERS
+create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.SHIPPERS (
+	SHIPPERID NUMBER(38,0),                 -- Identifier for each shipping company.
+	COMPANYNAME VARCHAR(16777216),          -- Name of the shipping company.
+	PHONE VARCHAR(16777216),                -- Contact phone number.
+	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when data was added.
+	ZIW_IS_DELETED BOOLEAN                 -- Indicates if data is deleted.
+);
+
+-- Table: SUPPLIERS
+create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.SUPPLIERS (
+	SUPPLIERID NUMBER(38,0),                -- Identifier for each supplier.
+	COMPANYNAME VARCHAR(16777216),          -- Name of the supplier company.
+	CONTACTNAME VARCHAR(16777216),          -- Name of the contact person.
+	CONTACTTITLE VARCHAR(16777216),         -- Job title of the contact person.
+	ADDRESS VARCHAR(16777216),              -- Supplier's street address.
+	CITY VARCHAR(16777216),                 -- City where supplier is located.
+	REGION VARCHAR(16777216),               -- Larger region where supplier is situated.
+	POSTALCODE VARCHAR(16777216),           -- Postal code of supplier's address.
+	COUNTRY VARCHAR(16777216),              -- Country where supplier operates.
+	PHONE VARCHAR(16777216),                -- Contact phone number.
+	FAX VARCHAR(16777216),                  -- Contact fax number.
+	HOMEPAGE VARCHAR(16777216),             -- Supplier's homepage or website.
+	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when data was added.
+	ZIW_IS_DELETED BOOLEAN                 -- Indicates if supplier data is deleted.
+);
+
+-- Table: TERRITORIES
+create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.TERRITORIES (
+	TERRITORYID VARCHAR(16777216),          -- Identifier for each territory.
+	TERRITORYDESCRIPTION VARCHAR(16777216), -- Description of the territory.
+	REGIONID NUMBER(38,0),                  -- Identifier of the region the territory is in.
+	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when data was added.
+	ZIW_IS_DELETED BOOLEAN                 -- Indicates if data is deleted.
+);
+
+
+Follow the instructions above and Convert the following text to snowflake compatible sql: {user_text}
+
+###RESPONSE:
+"""
+
+API_QUESTION_PROMPT = env.str("API_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_API)
+DOC_QUESTION_PROMPT = env.str("DOC_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_DOC)
+CODE_QUESTION_PROMPT = env.str("CODE_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_CODE)
+SUMMARY_QUESTION_PROMPT = env.str("SUMMARY_QUESTION_PROMPT",DEFAULT_PROMPT_FOR_SUMMARY)
+API_HELP_QUESTION_PROMPT = env.str("API_HELP_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_API_HELP)
+
+DEFAULT_PROMPT_FOR_SQL_GEN_BKP = """
+Below is an instruction that describes a task,paired with an input that provides further context. Write a response that appropriately completes the request.Do not add explanation or summary, only output SQL.
+
+### INSTRUCTION:
+You are an expert at writing sql consider following important points while generating sql
+IMPORTANT - Do not add explanation or summary. Only output SQL
 IMPORTANT - Refer to the schema information given below more information on the tables:
+IMPORTANT - Refer to the each column description given as column level comments:
+
 
 categories : categoryid,categoryname,description,picture 
 customercustomerdemo : customerid,customertypeid
@@ -285,9 +476,3 @@ Follow the instructions above and Convert the following text to sql: {user_text}
 
 ###RESPONSE:
 """
-
-API_QUESTION_PROMPT = env.str("API_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_API)
-DOC_QUESTION_PROMPT = env.str("DOC_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_DOC)
-CODE_QUESTION_PROMPT = env.str("CODE_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_CODE)
-SUMMARY_QUESTION_PROMPT = env.str("SUMMARY_QUESTION_PROMPT",DEFAULT_PROMPT_FOR_SUMMARY)
-API_HELP_QUESTION_PROMPT = env.str("API_HELP_QUESTION_PROMPT", DEFAULT_PROMPT_FOR_API_HELP)
