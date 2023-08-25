@@ -13,6 +13,7 @@ from transformers import (
 )
 from getpass import getpass
 from datasets import load_dataset
+from datasets import concatenate_datasets, load_dataset
 
 
 def login_to_hub():
@@ -55,7 +56,7 @@ def dataset_for_training(tokenizer):
     tokenizer.pad_token = tokenizer.eos_token
 
     train_data = load_dataset("ehartford/WizardLM_alpaca_evol_instruct_70k_unfiltered")
-    load_dataset("json",data_files=)
+    load_dataset("json")
     train_datatest = train_data["train"].shuffle().map(generate_and_tokenize_prompt)
 
     import random
@@ -63,6 +64,7 @@ def dataset_for_training(tokenizer):
     eval_datatest = train_datatest.select(random.sample(range(len(train_datatest)), n))
 
     data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
+    # merged_dataset = concatenate_datasets([train_datatest, train_datatest1])
     return train_datatest, eval_datatest, data_collator
 
 
@@ -94,7 +96,7 @@ def get_trainser_args():
         fp16=False,  # If model is loaded using torch_dtype=torch.float16 tthis should be set to False
         bf16=False,  # If model is loaded using torch_dtype=torch.float16 this should be set to true
         report_to=["tensorboard"],
-        no_cuda=False,
+        no_cuda=False
     )
     return training_args
 
@@ -108,3 +110,6 @@ def train(model,tokenizer,training_args,train_dataset,eval_dataset,data_collecto
         eval_dataset=eval_dataset,
     )
     trainer.train()
+
+
+
