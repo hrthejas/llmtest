@@ -261,24 +261,18 @@ create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.CATEGORIES (
 	CATEGORYNAME VARCHAR(16777216),        -- Name of the product category.
 	DESCRIPTION VARCHAR(16777216),         -- Brief description of the product category.
 	PICTURE BINARY(8388608),               -- Image representing the product category.
-	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when product category data was added.
-	ZIW_IS_DELETED BOOLEAN                 -- Indicates if product category is deleted or active
 );
 
 -- Table: CUSTOMERCUSTOMERDEMO
 create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.CUSTOMERCUSTOMERDEMO (
 	CUSTOMERID VARCHAR(16777216),          -- ID for each customer.
 	CUSTOMERTYPEID VARCHAR(16777216),      -- Type of customer.
-	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when customer data was added.
-	ZIW_IS_DELETED BOOLEAN                 -- Indicates if customer data is deleted.
 );
 
 -- Table: CUSTOMERDEMOGRAPHICS
 create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.CUSTOMERDEMOGRAPHICS (
 	CUSTOMERTYPEID VARCHAR(16777216),      -- Type of customer.
 	CUSTOMERDESC VARCHAR(16777216),        -- Description of customer type.
-	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when customer data was added.
-	ZIW_IS_DELETED BOOLEAN                 -- Indicates if customer data is deleted.
 );
 
 -- Table: CUSTOMERS
@@ -294,8 +288,6 @@ create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.CUSTOMERS (
 	COUNTRY VARCHAR(16777216),             -- Country where customer operates.
 	PHONE VARCHAR(16777216),               -- Contact phone number. This is their primary phone number.
 	FAX VARCHAR(16777216),                 -- Contact fax number.
-	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when customer data was added.
-	ZIW_IS_DELETED BOOLEAN                 -- Indicates if customer data is deleted.
 );
 
 -- Table: EMPLOYEES
@@ -319,16 +311,12 @@ create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.EMPLOYEES (
 	REPORTSTO NUMBER(38,0),                -- ID of supervisor employee.
 	PHOTOPATH VARCHAR(16777216),           -- Path to employee's photo.
 	SALARY FLOAT,                          -- Employee's salary.
-	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when employee data was added.
-	ZIW_IS_DELETED BOOLEAN                 -- Indicates if employee data is deleted.
 );
 
 -- Table: EMPLOYEETERRITORIES
 create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.EMPLOYEETERRITORIES (
 	EMPLOYEEID NUMBER(38,0),               -- ID of employee.
 	TERRITORYID VARCHAR(16777216),         -- ID of territory assigned to employee.
-	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when data was added.
-	ZIW_IS_DELETED BOOLEAN                 -- Indicates if data is deleted.
 );
 
 -- Table: ORDERS
@@ -347,8 +335,6 @@ create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.ORDERS (
 	SHIPREGION VARCHAR(16777216),           -- Shipping region. This could be the State for Shipping.
 	SHIPPOSTALCODE VARCHAR(16777216),       -- Shipping postal code or Shipping ZIP code.
 	SHIPCOUNTRY VARCHAR(16777216),          -- Shipping country.
-	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when data was added.
-	ZIW_IS_DELETED BOOLEAN                 -- Indicates if data is deleted.
 );
 
 -- Table: ORDER_DETAILS
@@ -358,8 +344,6 @@ create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.ORDER_DETAILS (
 	UNITPRICE NUMBER(10,4),                 -- Price per unit of the product. This is in $.
 	QUANTITY NUMBER(38,0),                  -- Number of units ordered.
 	DISCOUNT FLOAT,                         -- Discount applied to the entire order's $ value. This is specified as a percentage value. Total order value is calculated as Quantity * Unit Price and then reducing the discount from that value.
-	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when data was added.
-	ZIW_IS_DELETED BOOLEAN                 -- Indicates if data is deleted.
 );
 
 -- Table: PRODUCTS
@@ -374,16 +358,12 @@ create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.PRODUCTS (
 	UNITSONORDER NUMBER(38,0),              -- Number of units on order.
 	REORDERLEVEL NUMBER(38,0),              -- Minimum number of units to trigger a reorder.
 	DISCONTINUED BOOLEAN,                   -- Indicates if the product is no longer available in stock or not being supplied by the vendor or has been marked as inactive.
-	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when data was added.
-	ZIW_IS_DELETED BOOLEAN                 -- Indicates if product data is deleted.
 );
 
 -- Table: REGION
 create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.REGION (
 	REGIONID NUMBER(38,0),                  -- Identifier for each geographical region.
 	REGIONDESCRIPTION VARCHAR(16777216),    -- Description of the region.
-	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when data was added.
-	ZIW_IS_DELETED BOOLEAN                 -- Indicates if data is deleted.
 );
 
 -- Table: SHIPPERS
@@ -391,8 +371,6 @@ create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.SHIPPERS (
 	SHIPPERID NUMBER(38,0),                 -- Identifier for each shipping company.
 	COMPANYNAME VARCHAR(16777216),          -- Name of the shipping company.
 	PHONE VARCHAR(16777216),                -- Contact phone number.
-	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when data was added.
-	ZIW_IS_DELETED BOOLEAN                 -- Indicates if data is deleted.
 );
 
 -- Table: SUPPLIERS
@@ -409,8 +387,6 @@ create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.SUPPLIERS (
 	PHONE VARCHAR(16777216),                -- Contact phone number.
 	FAX VARCHAR(16777216),                  -- Contact fax number.
 	HOMEPAGE VARCHAR(16777216),             -- Supplier's homepage or website.
-	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when data was added.
-	ZIW_IS_DELETED BOOLEAN                 -- Indicates if supplier data is deleted.
 );
 
 -- Table: TERRITORIES
@@ -418,9 +394,8 @@ create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.TERRITORIES (
 	TERRITORYID VARCHAR(16777216),          -- Identifier for each territory.
 	TERRITORYDESCRIPTION VARCHAR(16777216), -- Description of the territory.
 	REGIONID NUMBER(38,0),                  -- Identifier of the region the territory is in.
-	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when data was added.
-	ZIW_IS_DELETED BOOLEAN                 -- Indicates if data is deleted.
 );
+
 
 Follow the instructions above and Convert the following text to snowflake compatible sql: {user_text}
 
