@@ -255,15 +255,14 @@ IMPORTANT - Do not add explanation or summary. Only output SQL
 IMPORTANT - Refer to the schema information given below as create table statements for more information on the tables:
 IMPORTANT - Refer to the each column description given as column level comments:
 
-
 -- Table: CATEGORIES
 create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.CATEGORIES (
 	CATEGORYID NUMBER(38,0),               -- ID for each product category.
 	CATEGORYNAME VARCHAR(16777216),        -- Name of the product category.
-	DESCRIPTION VARCHAR(16777216),         -- Brief description of the category.
-	PICTURE BINARY(8388608),               -- Image representing the category.
-	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when category data was added.
-	ZIW_IS_DELETED BOOLEAN                 -- Indicates if category is deleted.
+	DESCRIPTION VARCHAR(16777216),         -- Brief description of the product category.
+	PICTURE BINARY(8388608),               -- Image representing the product category.
+	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when product category data was added.
+	ZIW_IS_DELETED BOOLEAN                 -- Indicates if product category is deleted or active
 );
 
 -- Table: CUSTOMERCUSTOMERDEMO
@@ -289,11 +288,11 @@ create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.CUSTOMERS (
 	CONTACTNAME VARCHAR(16777216),         -- Name of primary contact.
 	CONTACTTITLE VARCHAR(16777216),        -- Role of primary contact.
 	ADDRESS VARCHAR(16777216),             -- Customer's street address.
-	CITY VARCHAR(16777216),                -- City where customer is located.
-	REGION VARCHAR(16777216),              -- Geographical region of customer.
-	POSTALCODE VARCHAR(16777216),          -- Postal code of customer's address.
+	CITY VARCHAR(16777216),                -- City where the customer is located.
+	REGION VARCHAR(16777216),              -- Geographical region of customer. This could be the State in which the customer resides.
+	POSTALCODE VARCHAR(16777216),          -- Postal code or ZIP code of customer's address.
 	COUNTRY VARCHAR(16777216),             -- Country where customer operates.
-	PHONE VARCHAR(16777216),               -- Contact phone number.
+	PHONE VARCHAR(16777216),               -- Contact phone number. This is their primary phone number.
 	FAX VARCHAR(16777216),                 -- Contact fax number.
 	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when customer data was added.
 	ZIW_IS_DELETED BOOLEAN                 -- Indicates if customer data is deleted.
@@ -310,8 +309,8 @@ create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.EMPLOYEES (
 	HIREDATE TIMESTAMP_NTZ(9),             -- Date when employee was hired.
 	ADDRESS VARCHAR(16777216),             -- Employee's street address.
 	CITY VARCHAR(16777216),                -- City where employee lives.
-	REGION VARCHAR(16777216),              -- Larger region where employee resides.
-	POSTALCODE VARCHAR(16777216),          -- Postal code of employee's address.
+	REGION VARCHAR(16777216),              -- Larger region where employee resides. This could be the State where Employee resides.
+	POSTALCODE VARCHAR(16777216),          -- Postal code or ZIP code of employee's address.
 	COUNTRY VARCHAR(16777216),             -- Country where employee lives.
 	HOMEPHONE VARCHAR(16777216),           -- Employee's home phone number.
 	EXTENSION VARCHAR(16777216),           -- Phone extension for employee.
@@ -341,12 +340,12 @@ create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.ORDERS (
 	REQUIREDDATE TIMESTAMP_NTZ(9),          -- Date when the order is needed.
 	SHIPPEDDATE TIMESTAMP_NTZ(9),           -- Date when the order was shipped.
 	SHIPVIA NUMBER(38,0),                   -- Identifier of the shipping company.
-	FREIGHT NUMBER(10,4),                   -- Cost of shipping.
+	FREIGHT NUMBER(10,4),                   -- Freight Cost of shipping.
 	SHIPNAME VARCHAR(16777216),             -- Name of the recipient.
 	SHIPADDRESS VARCHAR(16777216),          -- Shipping address.
 	SHIPCITY VARCHAR(16777216),             -- Shipping city.
-	SHIPREGION VARCHAR(16777216),           -- Shipping region.
-	SHIPPOSTALCODE VARCHAR(16777216),       -- Shipping postal code.
+	SHIPREGION VARCHAR(16777216),           -- Shipping region. This could be the State for Shipping.
+	SHIPPOSTALCODE VARCHAR(16777216),       -- Shipping postal code or Shipping ZIP code.
 	SHIPCOUNTRY VARCHAR(16777216),          -- Shipping country.
 	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when data was added.
 	ZIW_IS_DELETED BOOLEAN                 -- Indicates if data is deleted.
@@ -356,9 +355,9 @@ create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.ORDERS (
 create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.ORDER_DETAILS (
 	ORDERID NUMBER(38,0),                   -- Identifier for the order.
 	PRODUCTID NUMBER(38,0),                 -- Identifier for the product in the order.
-	UNITPRICE NUMBER(10,4),                 -- Price per unit of the product.
+	UNITPRICE NUMBER(10,4),                 -- Price per unit of the product. This is in $.
 	QUANTITY NUMBER(38,0),                  -- Number of units ordered.
-	DISCOUNT FLOAT,                         -- Discount applied to the product.
+	DISCOUNT FLOAT,                         -- Discount applied to the entire order's $ value. This is specified as a percentage value. Total order value is calculated as Quantity * Unit Price and then reducing the discount from that value.
 	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when data was added.
 	ZIW_IS_DELETED BOOLEAN                 -- Indicates if data is deleted.
 );
@@ -374,7 +373,7 @@ create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.PRODUCTS (
 	UNITSINSTOCK NUMBER(38,0),              -- Number of units currently in stock.
 	UNITSONORDER NUMBER(38,0),              -- Number of units on order.
 	REORDERLEVEL NUMBER(38,0),              -- Minimum number of units to trigger a reorder.
-	DISCONTINUED BOOLEAN,                   -- Indicates if the product is no longer available.
+	DISCONTINUED BOOLEAN,                   -- Indicates if the product is no longer available in stock or not being supplied by the vendor or has been marked as inactive.
 	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when data was added.
 	ZIW_IS_DELETED BOOLEAN                 -- Indicates if product data is deleted.
 );
@@ -404,8 +403,8 @@ create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.SUPPLIERS (
 	CONTACTTITLE VARCHAR(16777216),         -- Job title of the contact person.
 	ADDRESS VARCHAR(16777216),              -- Supplier's street address.
 	CITY VARCHAR(16777216),                 -- City where supplier is located.
-	REGION VARCHAR(16777216),               -- Larger region where supplier is situated.
-	POSTALCODE VARCHAR(16777216),           -- Postal code of supplier's address.
+	REGION VARCHAR(16777216),               -- Larger region where supplier is situated. This could be State where the supplier is located.
+	POSTALCODE VARCHAR(16777216),           -- Postal code or ZIP code of supplier's address.
 	COUNTRY VARCHAR(16777216),              -- Country where supplier operates.
 	PHONE VARCHAR(16777216),                -- Contact phone number.
 	FAX VARCHAR(16777216),                  -- Contact fax number.
@@ -422,7 +421,6 @@ create or replace TABLE NORTHWIND_AI_DB.NORTHWIND_AI_SCHEMA.TERRITORIES (
 	ZIW_TARGET_TIMESTAMP TIMESTAMP_NTZ(9), -- Time when data was added.
 	ZIW_IS_DELETED BOOLEAN                 -- Indicates if data is deleted.
 );
-
 
 Follow the instructions above and Convert the following text to snowflake compatible sql: {user_text}
 
