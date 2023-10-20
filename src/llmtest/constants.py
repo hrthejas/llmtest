@@ -476,7 +476,7 @@ Follow the instructions above and Convert the following text to sql: {user_text}
 """
 
 DEFAULT_PROMPT_FOR_DASHBOARD = """
-Below is an instruction that describes a task,paired with an input that provides further context. Write a response that appropriately completes the request.Do not add explanation or summary, only output SQL with its heading.
+Below is an instruction that describes a task,paired with an input that provides further context. Write a response that appropriately completes the request.Do not add explanation or summary, only output SnowSQL with its heading.
 
 ### INSTRUCTION:
 You are business analyst and you are very good at Snowflake SQL. you need to generate sql for building dashboard.
