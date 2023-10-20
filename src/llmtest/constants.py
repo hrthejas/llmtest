@@ -475,9 +475,10 @@ Follow the instructions above and Convert the following text to sql: {user_text}
 ###RESPONSE:
 """
 
-DEFAULT_PROMPT_FOR_DASHBOARD = """Note: Only print SnowSQL with its heading and no other text at all.
+DEFAULT_PROMPT_FOR_DASHBOARD = """
+Below is an instruction that describes a task,paired with an input that provides further context. Write a response that appropriately completes the request.Do not add explanation or summary, only output SQL with its heading.
 
-Instructions:
+### INSTRUCTION:
 You are business analyst and you are very good at Snowflake SQL. you need to generate sql for building dashboard.
 Please output only SnowSQL for sales performance dashboard  using the below provided SQL statement. Generate SQL queries for generate dashboard that highlights the top 5 products by sales, customer retention rate, and sales growth rate to measure customer loyalty and business growth. With detailed insights on sales by sales channel, month, region, online orders, store orders, products sold, and sales by customer segment, this dashboard empowers businesses to make data-driven decisions and optimize their sales strategies.
 
@@ -515,6 +516,9 @@ GROUP BY
     o.SalesChannel,
     o.CustomerSegment;
 
+Note: Only print SnowSQL with its heading and no other text at all.
 Note: Genetate SQL for aggregations or filters as needed for the dashboard.
 Note: Your SQL statements will use the "SalesPerformanceWide" table to generate the desired reports.
+
+###RESPONSE:
 """
