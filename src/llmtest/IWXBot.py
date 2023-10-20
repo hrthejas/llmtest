@@ -145,7 +145,7 @@ class IWXBot:
 
     def ask_with_memory(self, answer_type, query, similarity_search_k=2, api_prompt=None,
                         doc_prompt=None, code_prompt=None, summary_prompt=None, api_help_prompt=None,
-                        sql_gen_prompt=None,
+                        sql_gen_prompt=None, dashboard_prompt=None,
                         new_chat=False):
 
         self.api_iwx_retriever.set_search_k(similarity_search_k)
@@ -166,6 +166,8 @@ class IWXBot:
             api_help_prompt = self.api_help_prompt
         if sql_gen_prompt is None:
             sql_gen_prompt = constants.DEFAULT_PROMPT_FOR_SQL_GEN
+        if dashboard_prompt is None:
+            dashboard_prompt = constants.DEFAULT_PROMPT_FOR_DASHBOARD
 
         if self.llm_model is not None:
             chain = None
@@ -181,6 +183,9 @@ class IWXBot:
             elif answer_type == "SQL":
                 prompt_with_query = sql_gen_prompt.format(user_text=query)
                 response = self.summary_llm_model.predict(prompt_with_query)
+                bot_message = response
+            elif answer_type == "DASHBOARD":
+                response = self.summary_llm_model.predict(dashboard_prompt)
                 bot_message = response
             else:
                 if answer_type == "API":
@@ -222,6 +227,7 @@ class IWXBot:
                         summary_prompt_template=summary_prompt_template,
                         api_help_prompt_template=api_help_prompt_template,
                         sql_gen_prompt_template=sql_gen_prompt_template,
+                        dashboard_prompt=constants.DEFAULT_PROMPT_FOR_DASHBOARD,
                         new_chat=False):
 
         api_prompt = PromptTemplate(template=api_prompt_template,
@@ -240,18 +246,20 @@ class IWXBot:
                                          input_variables=["context", "question", "base_url"])
 
         return self.ask_with_memory(answer_type, query, similarity_search_k, api_prompt, doc_prompt, code_prompt,
-                                    summary_prompt, api_help_prompt, sql_gen_prompt_template, new_chat)
+                                    summary_prompt, api_help_prompt, sql_gen_prompt_template, dashboard_prompt,
+                                    new_chat)
 
     def start_iwx_chat(self, debug=True, use_queue=False, share_ui=True, similarity_search_k=2, record_feedback=False,
                        add_summary_answer_type=True, api_prompt_template=constants.API_QUESTION_PROMPT,
                        doc_prompt_template=constants.DOC_QUESTION_PROMPT,
                        code_prompt_template=constants.DEFAULT_PROMPT_FOR_CODE,
-                       summary_prompt_template=constants.DEFAULT_PROMPT_FOR_SUMMARY):
+                       summary_prompt_template=constants.DEFAULT_PROMPT_FOR_SUMMARY,
+                       dashboard_prompt=constants.DEFAULT_PROMPT_FOR_DASHBOARD):
 
         if add_summary_answer_type:
-            choices = ['SQL', 'API', 'Docs', 'Code', 'API HELP', 'Summary']
+            choices = ['SQL', 'API', 'Docs', 'Code', 'API HELP', 'DASHBOARD', 'Summary']
         else:
-            choices = ['SQL', 'API', 'Docs', 'Code', 'API HELP']
+            choices = ['SQL', 'API', 'Docs', 'Code', 'API HELP', 'DASHBOARD']
         data = [('Bad', '1'), ('Ok', '2'), ('Good', '3'), ('Very Good', '4'), ('Perfect', '5')]
 
         def chatbot(choice_selected, message):
@@ -259,7 +267,8 @@ class IWXBot:
                                         new_chat=True, api_prompt_template=api_prompt_template,
                                         doc_prompt_template=doc_prompt_template,
                                         code_prompt_template=code_prompt_template,
-                                        summary_prompt_template=summary_prompt_template)
+                                        summary_prompt_template=summary_prompt_template,
+                                        dashboard_prompt=dashboard_prompt)
 
         msg = gr.Textbox(label="User Question")
         submit = gr.Button("Submit")
