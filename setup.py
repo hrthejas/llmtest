@@ -57,7 +57,7 @@ setup(
         "faiss-cpu",
         "gradio",
         "IPython",
-        "openai",
+        "openai==0.28.1",
         "mysql-connector-python",
         "jq",
         "auto_gptq"
