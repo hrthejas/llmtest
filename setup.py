@@ -59,8 +59,7 @@ setup(
         "IPython",
         "openai==0.28.1",
         "mysql-connector-python",
-        "jq",
-        "auto_gptq"
+        "jq"
     ],
     extras_require=extras,
     classifiers=[
