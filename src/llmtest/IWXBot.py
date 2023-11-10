@@ -185,7 +185,7 @@ class IWXBot:
                 response = self.summary_llm_model.predict(prompt_with_query)
                 bot_message = response
             elif answer_type == "DASHBOARD":
-                response = self.summary_llm_model.predict(dashboard_prompt)
+                response = self.summary_llm_model.predict(query)
                 bot_message = response
             else:
                 if answer_type == "API":
